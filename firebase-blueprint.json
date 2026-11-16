@@ -1,0 +1,292 @@
+{
+  "entities": {
+    "ModulePermission": {
+      "title": "ModulePermission",
+      "description": "CRUD action permissions for a single application module.",
+      "type": "object",
+      "properties": {
+        "view": {
+          "type": "boolean",
+          "description": "Whether the staff member can view this module."
+        },
+        "add": {
+          "type": "boolean",
+          "description": "Whether the staff member can add records in this module."
+        },
+        "edit": {
+          "type": "boolean",
+          "description": "Whether the staff member can edit records in this module."
+        },
+        "delete": {
+          "type": "boolean",
+          "description": "Whether the staff member can delete records in this module."
+        }
+      },
+      "required": ["view", "add", "edit", "delete"]
+    },
+    "PermissionsMap": {
+      "title": "PermissionsMap",
+      "description": "Per-module access control permissions for a staff profile.",
+      "type": "object",
+      "properties": {
+        "clients": {
+          "type": "object",
+          "$ref": "ModulePermission"
+        },
+        "business_details": {
+          "type": "object",
+          "$ref": "ModulePermission"
+        },
+        "portal_logins": {
+          "type": "object",
+          "$ref": "ModulePermission"
+        },
+        "ledger": {
+          "type": "object",
+          "$ref": "ModulePermission"
+        },
+        "documents": {
+          "type": "object",
+          "$ref": "ModulePermission"
+        }
+      }
+    },
+    "StaffProfile": {
+      "title": "StaffProfile",
+      "description": "Authorized office staff profile keyed by lowercase email address.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 254,
+          "pattern": "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$",
+          "description": "Lowercase email address matching the document ID."
+        },
+        "fullName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Full display name of the staff member."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["super_admin", "manager", "accountant", "data_entry", "custom", "admin", "staff"],
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "Access role or preset assigned to the staff member."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the staff account is currently authorized to sign in."
+        },
+        "permissions": {
+          "type": "object",
+          "$ref": "PermissionsMap",
+          "description": "Module-level permissions map."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was created."
+        },
+        "createdBy": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of the super admin who invited this staff member."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the profile was last updated."
+        },
+        "updatedBy": {
+          "type": "string",
+          "format": "email",
+          "description": "Email of the super admin who last updated this staff member."
+        }
+      },
+      "required": ["email", "fullName", "role", "isActive", "createdAt"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Office client personal, identity, classification, and status record.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "nameLower": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "fatherName": { "type": "string", "maxLength": 120 },
+        "mobile": { "type": "string", "minLength": 1, "maxLength": 30 },
+        "email": { "type": "string", "maxLength": 254 },
+        "address": { "type": "string", "maxLength": 500 },
+        "cnic": { "type": "string", "maxLength": 20, "pattern": "^(\\d{5}-\\d{7}-\\d)?$" },
+        "cnicIssueDate": { "type": "string", "maxLength": 20 },
+        "cnicExpiryDate": { "type": "string", "maxLength": 20 },
+        "passportNumber": { "type": "string", "maxLength": 40 },
+        "passportIssueDate": { "type": "string", "maxLength": 20 },
+        "passportExpiryDate": { "type": "string", "maxLength": 20 },
+        "ntn": { "type": "string", "maxLength": 40 },
+        "clientType": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "status": { "type": "string", "enum": ["Active", "Pending", "Completed", "On Hold"] },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["name", "nameLower", "mobile", "clientType", "status", "createdAt", "createdBy"]
+    },
+    "BusinessDetails": {
+      "title": "BusinessDetails",
+      "description": "Business registration metadata for a client, keyed by clientId.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "businessName": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "businessCategory": { "type": "string", "maxLength": 120 },
+        "incNo": { "type": "string", "maxLength": 80 },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["clientId", "businessName"]
+    },
+    "CaseService": {
+      "title": "CaseService",
+      "description": "Individual service case belonging to a client.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "serviceName": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "status": {
+          "type": "string",
+          "enum": ["Not Started", "In Progress", "Submitted", "Completed", "Rejected"]
+        },
+        "startDate": { "type": "string", "maxLength": 20 },
+        "expectedDate": { "type": "string", "maxLength": 20 },
+        "completedDate": { "type": "string", "maxLength": 20 },
+        "fees": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["clientId", "serviceName", "status", "createdAt", "createdBy"]
+    },
+    "PortalLogin": {
+      "title": "PortalLogin",
+      "description": "Portal login credential record belonging to a client.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "departmentName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "websiteUrl": { "type": "string", "maxLength": 500 },
+        "loginId": { "type": "string", "maxLength": 160 },
+        "password": { "type": "string", "maxLength": 200 },
+        "pinCode": { "type": "string", "maxLength": 60 },
+        "notes": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["clientId", "departmentName", "createdAt", "createdBy"]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Financial ledger debit or credit entry belonging to a client.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "clientName": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "date": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "description": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "type": { "type": "string", "enum": ["Debit", "Credit"] },
+        "amount": { "type": "number", "exclusiveMinimum": 0 },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["Cash", "Bank Transfer", "Cheque", "Online", "Other"]
+        },
+        "referenceNo": { "type": "string", "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["clientId", "clientName", "date", "description", "type", "amount", "paymentMethod", "createdAt", "createdBy"]
+    },
+    "ClientDocument": {
+      "title": "ClientDocument",
+      "description": "Uploaded client document metadata stored in Firestore without permanent public download URLs.",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 160 },
+        "fileName": { "type": "string", "minLength": 1, "maxLength": 260 },
+        "storagePath": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "note": { "type": "string", "maxLength": 500 },
+        "fileType": { "type": "string", "enum": ["image/jpeg", "image/png", "application/pdf"] },
+        "size": { "type": "number" },
+        "uploadedBy": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["clientId", "fileName", "storagePath", "category", "fileType", "size", "uploadedBy", "createdAt"]
+    },
+    "ActivityLogEntry": {
+      "title": "ActivityLogEntry",
+      "description": "Audit log record for staff permission and office management actions.",
+      "type": "object",
+      "properties": {
+        "userEmail": { "type": "string", "format": "email" },
+        "action": { "type": "string" },
+        "module": { "type": "string" },
+        "targetEmail": { "type": "string", "format": "email" },
+        "targetId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "websiteName": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userEmail", "action", "module", "details", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/profiles/{email}": {
+      "schema": { "$ref": "StaffProfile" },
+      "description": "Stores authorized staff profiles, roles, active flags, and module permissions keyed by lowercase email."
+    },
+    "/clients/{id}": {
+      "schema": { "$ref": "Client" },
+      "description": "Stores office client personal, identity, and classification records."
+    },
+    "/businessDetails/{id}": {
+      "schema": { "$ref": "BusinessDetails" },
+      "description": "Stores one business details record per client (document ID equals clientId)."
+    },
+    "/cases/{id}": {
+      "schema": { "$ref": "CaseService" },
+      "description": "Stores client service cases linked by clientId."
+    },
+    "/portalLogins/{id}": {
+      "schema": { "$ref": "PortalLogin" },
+      "description": "Stores client portal credentials linked by clientId."
+    },
+    "/ledger/{id}": {
+      "schema": { "$ref": "LedgerEntry" },
+      "description": "Stores client debit and credit financial ledger entries linked by clientId."
+    },
+    "/documents/{id}": {
+      "schema": { "$ref": "ClientDocument" },
+      "description": "Stores client document metadata linked to Firebase Storage objects by storagePath."
+    },
+    "/activityLog/{id}": {
+      "schema": { "$ref": "ActivityLogEntry" },
+      "description": "Append-only audit log of staff actions."
+    }
+  }
+}

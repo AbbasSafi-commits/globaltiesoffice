@@ -1,0 +1,6 @@
+{
+  "name": "Global Ties Office",
+  "description": "Private office-only client management portal for Global Ties Office authorized staff.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

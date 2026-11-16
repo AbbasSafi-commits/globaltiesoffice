@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function profilePath() {
+      return /databases/(default)/documents/profiles/$(myEmail());
+    }
+    function isOwner() { return signedIn() && myEmail() == 'myn91509@gmail.com'; }
+    function isActive() {
+      return signedIn() &&
+        firestore.exists(profilePath()) &&
+        firestore.get(profilePath()).data.isActive == true;
+    }
+    function can(action) {
+      return isOwner() || (isActive() && (
+        firestore.get(profilePath()).data.role == 'super_admin' ||
+        firestore.get(profilePath()).data.permissions.get('documents', {}).get(action, false) == true));
+    }
+
+    match /clients/{clientId}/{allPaths=**} {
+      allow read:   if can('view');
+      allow create: if can('add') && request.resource.size < 10 * 1024 * 1024;
+      allow delete: if can('delete');
+      allow update: if false;
+    }
+  }
+}

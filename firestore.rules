@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isOwner() { return signedIn() && myEmail() == 'myn91509@gmail.com'; }
+    function hasProfile() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/profiles/$(myEmail()));
+    }
+    function myProfile() {
+      return get(/databases/$(database)/documents/profiles/$(myEmail())).data;
+    }
+    function isActive() { return hasProfile() && myProfile().isActive == true; }
+    function isSuperAdmin() {
+      return isOwner() || (isActive() && myProfile().role == 'super_admin');
+    }
+    function can(module, action) {
+      return isSuperAdmin() || (isActive() &&
+        myProfile().permissions.get(module, {}).get(action, false) == true);
+    }
+
+    // Invited users list
+    match /profiles/{email} {
+      allow read: if signedIn() && (email == myEmail() || isSuperAdmin());
+      allow create: if isSuperAdmin() ||
+        (isOwner() && email == myEmail() && request.resource.data.role == 'super_admin');
+      // nobody can edit the owner, and nobody can edit their own profile
+      allow update: if isSuperAdmin() && email != 'myn91509@gmail.com' && email != myEmail();
+      allow delete: if isSuperAdmin() && email != 'myn91509@gmail.com' && email != myEmail();
+    }
+
+    // Business data (we'll add more in later steps)
+    match /clients/{id} {
+      allow read:   if can('clients', 'view');
+      allow create: if can('clients', 'add');
+      allow update: if can('clients', 'edit');
+      allow delete: if can('clients', 'delete');
+    }
+    match /ledger/{id} {
+      allow read:   if can('ledger', 'view');
+      allow create: if can('ledger', 'add');
+      allow update: if can('ledger', 'edit');
+      allow delete: if can('ledger', 'delete');
+    }
+    match /documents/{id} {
+      allow read:   if can('documents', 'view');
+      allow create: if can('documents', 'add');
+      allow update: if can('documents', 'edit');
+      allow delete: if can('documents', 'delete');
+    }
+    match /portalLogins/{id} {
+      allow read:   if can('portal_logins', 'view');
+      allow create: if can('portal_logins', 'add');
+      allow update: if can('portal_logins', 'edit');
+      allow delete: if can('portal_logins', 'delete');
+    }
+    match /businessDetails/{id} {
+      allow read:   if can('business_details', 'view');
+      allow create: if can('business_details', 'add');
+      allow update: if can('business_details', 'edit');
+      allow delete: if can('business_details', 'delete');
+    }
+    match /cases/{id} {
+      allow read:   if can('clients', 'view');
+      allow create: if can('clients', 'add');
+      allow update: if can('clients', 'edit');
+      allow delete: if can('clients', 'delete');
+    }
+
+    // Activity log: staff can write, only super admin can read, nobody can change it
+    match /activityLog/{id} {
+      allow create: if isActive() || isOwner();
+      allow read: if isSuperAdmin();
+      allow update, delete: if false;
+    }
+  }
+}

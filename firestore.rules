@@ -6,7 +6,7 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email_verified == true;
     }
     function myEmail() { return request.auth.token.email.lower(); }
-    function isOwner() { return signedIn() && myEmail() == 'myn91509@gmail.com'; }
+    function isOwner() { return signedIn() && myEmail() == 'dailyaura76@gmail.com'; }
     function hasProfile() {
       return signedIn() &&
         exists(/databases/$(database)/documents/profiles/$(myEmail()));
@@ -29,8 +29,8 @@ service cloud.firestore {
       allow create: if isSuperAdmin() ||
         (isOwner() && email == myEmail() && request.resource.data.role == 'super_admin');
       // nobody can edit the owner, and nobody can edit their own profile
-      allow update: if isSuperAdmin() && email != 'myn91509@gmail.com' && email != myEmail();
-      allow delete: if isSuperAdmin() && email != 'myn91509@gmail.com' && email != myEmail();
+      allow update: if isSuperAdmin() && email != 'dailyaura76@gmail.com' && email != myEmail();
+      allow delete: if isSuperAdmin() && email != 'dailyaura76@gmail.com' && email != myEmail();
     }
 
     // Business data (we'll add more in later steps)

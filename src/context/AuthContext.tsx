@@ -51,7 +51,7 @@ interface AuthContextValue {
 }
 
 // The sole email authorized to auto-provision the initial super_admin profile.
-const BOOTSTRAP_SUPER_ADMIN_EMAIL = 'myn91509@gmail.com';
+const BOOTSTRAP_SUPER_ADMIN_EMAIL = 'dailyaura76@gmail.com';
 
 const DEFAULT_SUPER_ADMIN_PERMISSIONS: Record<ModuleKey, ModulePermissions> = {
   clients: { view: true, add: true, edit: true, delete: true },

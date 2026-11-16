@@ -8,7 +8,7 @@ service firebase.storage {
     function profilePath() {
       return /databases/(default)/documents/profiles/$(myEmail());
     }
-    function isOwner() { return signedIn() && myEmail() == 'myn91509@gmail.com'; }
+    function isOwner() { return signedIn() && myEmail() == 'dailyaura76@gmail.com'; }
     function isActive() {
       return signedIn() &&
         firestore.exists(profilePath()) &&

@@ -9,7 +9,7 @@ export type RolePresetKey =
 
 export type FullPermissionsGrid = Record<ModuleKey, ModulePermissions>;
 
-export const OWNER_EMAIL = 'myn91509@gmail.com';
+export const OWNER_EMAIL = 'dailyaura76@gmail.com';
 
 export const MODULES: { key: ModuleKey; label: string }[] = [
   { key: 'clients', label: 'Clients' },

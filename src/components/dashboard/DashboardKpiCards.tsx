@@ -37,18 +37,18 @@ export function DashboardKpiCards({
       {showClients && (
         <Link
           to="/clients"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors block"
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all block"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-slate-500">Total Clients</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#0F2942]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
               <Users className="h-4 w-4" aria-hidden="true" />
             </div>
           </div>
           {loadingClients ? (
-            <div className="mt-2 h-7 w-16 rounded bg-slate-100 animate-pulse" />
+            <div className="mt-3 h-8 w-16 rounded-md bg-slate-100 animate-pulse" />
           ) : (
-            <div className="mt-2 font-mono text-2xl font-semibold tabular-nums text-slate-900">
+            <div className="mt-2.5 text-2xl font-semibold tabular-nums text-slate-900">
               {totalClients.toLocaleString()}
             </div>
           )}
@@ -59,18 +59,18 @@ export function DashboardKpiCards({
       {showClients && (
         <Link
           to="/clients"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors block"
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all block"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-slate-500">Active Clients</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <UserCheck className="h-4 w-4" aria-hidden="true" />
             </div>
           </div>
           {loadingClients ? (
-            <div className="mt-2 h-7 w-16 rounded bg-slate-100 animate-pulse" />
+            <div className="mt-3 h-8 w-16 rounded-md bg-slate-100 animate-pulse" />
           ) : (
-            <div className="mt-2 font-mono text-2xl font-semibold tabular-nums text-emerald-700">
+            <div className="mt-2.5 text-2xl font-semibold tabular-nums text-slate-900">
               {activeClients.toLocaleString()}
             </div>
           )}
@@ -81,60 +81,48 @@ export function DashboardKpiCards({
       {showClients && (
         <Link
           to="/clients"
-          className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition-colors block"
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all block"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-medium text-slate-500">Pending Cases</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
               <Briefcase className="h-4 w-4" aria-hidden="true" />
             </div>
           </div>
           {loadingCases ? (
-            <div className="mt-2 h-7 w-16 rounded bg-slate-100 animate-pulse" />
+            <div className="mt-3 h-8 w-16 rounded-md bg-slate-100 animate-pulse" />
           ) : (
-            <div className="mt-2 font-mono text-2xl font-semibold tabular-nums text-[#0F2942]">
+            <div className="mt-2.5 text-2xl font-semibold tabular-nums text-slate-900">
               {pendingCases.toLocaleString()}
             </div>
           )}
-          <div className="mt-1 text-xs text-slate-500">Services not completed</div>
+          <div className="mt-1 text-xs text-slate-500">Services in progress</div>
         </Link>
       )}
 
       {showLedger && (
         <Link
           to="/ledger"
-          className={`border rounded-xl p-5 transition-colors block ${
-            !loadingLedger && totalBalanceDue > 0
-              ? 'bg-red-50/50 border-red-200 hover:border-red-300'
-              : 'bg-white border-slate-200 hover:border-slate-300'
-          }`}
+          className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all block"
         >
           <div className="flex items-center justify-between gap-2">
-            <span
-              className={`text-xs font-medium ${
-                !loadingLedger && totalBalanceDue > 0
-                  ? 'text-red-700'
-                  : 'text-slate-500'
-              }`}
-            >
-              Total Balance Due
-            </span>
+            <span className="text-xs font-medium text-slate-500">Total Balance Due</span>
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                 !loadingLedger && totalBalanceDue > 0
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-emerald-50 text-emerald-700'
+                  ? 'bg-red-50 text-red-600'
+                  : 'bg-emerald-50 text-emerald-600'
               }`}
             >
               <Wallet className="h-4 w-4" aria-hidden="true" />
             </div>
           </div>
           {loadingLedger ? (
-            <div className="mt-2 h-7 w-28 rounded bg-slate-100 animate-pulse" />
+            <div className="mt-3 h-8 w-28 rounded-md bg-slate-100 animate-pulse" />
           ) : (
             <div
-              className={`mt-2 font-mono text-2xl font-semibold tabular-nums ${
-                totalBalanceDue > 0 ? 'text-red-800' : 'text-emerald-700'
+              className={`mt-2.5 text-2xl font-semibold tabular-nums ${
+                totalBalanceDue > 0 ? 'text-red-600' : 'text-emerald-700'
               }`}
             >
               {formatPkr(totalBalanceDue)}

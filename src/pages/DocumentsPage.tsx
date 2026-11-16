@@ -102,10 +102,10 @@ export function DocumentsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
             Documents
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-500">
             Central archive of client scans, identity documents, and PDF records across Global Ties Office.
           </p>
         </div>
@@ -114,7 +114,7 @@ export function DocumentsPage() {
           <button
             type="button"
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto shadow-xs cursor-pointer"
           >
             <Upload className="h-4 w-4" aria-hidden="true" />
             <span>Upload Documents</span>

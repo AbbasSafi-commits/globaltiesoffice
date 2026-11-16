@@ -46,22 +46,22 @@ export function LedgerStatementModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 overflow-y-auto print:static print:inset-auto print:bg-transparent print:p-0"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4 print:static print:inset-auto print:bg-transparent print:p-0"
       role="dialog"
       aria-modal="true"
       aria-labelledby="statement-title"
     >
-      <div className="w-full max-w-4xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden my-6 print:my-0 print:border-0 print:shadow-none print:rounded-none">
+      <div className="w-full max-w-4xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden print:max-h-none print:border-0 print:shadow-none print:rounded-none">
         {/* Toolbar hidden when printing */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70 print:hidden">
-          <h2 id="statement-title" className="font-display text-base font-semibold text-[#0F2942]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0 print:hidden">
+          <h2 id="statement-title" className="text-base font-semibold text-slate-900">
             Client Ledger Statement Preview
           </h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-xs font-medium text-white hover:bg-[#163859] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Print / Save as PDF</span>
@@ -69,7 +69,7 @@ export function LedgerStatementModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 cursor-pointer"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
               aria-label="Close statement preview"
             >
               <X className="h-5 w-5" />
@@ -78,17 +78,15 @@ export function LedgerStatementModal({
         </div>
 
         {/* Printable Statement Body */}
-        <div className="p-6 sm:p-10 space-y-6">
+        <div className="p-6 sm:p-10 space-y-6 overflow-y-auto flex-1 print:overflow-visible">
           {/* Office Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-200 pb-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center rounded-lg bg-[#0F2942] p-2 text-white">
+              <div className="flex items-center justify-center rounded-lg bg-[#0F172A] p-2 text-white">
                 <Globe className="h-6 w-6" strokeWidth={1.85} aria-hidden="true" />
               </div>
               <div>
-                <h1 className="font-display text-xl font-bold text-[#0F2942]">
-                  Global Ties Office
-                </h1>
+                <h1 className="text-xl font-bold text-slate-900">Global Ties Office</h1>
                 <p className="text-xs text-slate-500">Client Account Statement</p>
               </div>
             </div>

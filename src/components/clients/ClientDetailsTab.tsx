@@ -30,10 +30,10 @@ function ReadOnlyField({
 
         {badge && badge.level && (
           <span
-            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium border ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
               badge.level === 'expired'
-                ? 'bg-red-50 text-red-700 border-red-200'
-                : 'bg-orange-50 text-orange-800 border-orange-200'
+                ? 'bg-red-50 text-red-700'
+                : 'bg-amber-50 text-amber-800'
             }`}
           >
             <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -56,8 +56,8 @@ export function ClientDetailsTab({ client }: ClientDetailsTabProps) {
   return (
     <div className="space-y-6">
       {/* Personal Card */}
-      <section className="bg-white border border-slate-200 rounded-xl p-6">
-        <h2 className="font-display text-sm font-semibold text-[#0F2942] border-b border-slate-200 pb-3">
+      <section className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <h2 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3">
           Personal Information
         </h2>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -74,8 +74,8 @@ export function ClientDetailsTab({ client }: ClientDetailsTabProps) {
       </section>
 
       {/* Identity Card */}
-      <section className="bg-white border border-slate-200 rounded-xl p-6">
-        <h2 className="font-display text-sm font-semibold text-[#0F2942] border-b border-slate-200 pb-3">
+      <section className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <h2 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3">
           Identity &amp; Tax Information
         </h2>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -100,15 +100,15 @@ export function ClientDetailsTab({ client }: ClientDetailsTabProps) {
       </section>
 
       {/* Notes & Audit Card */}
-      <section className="bg-white border border-slate-200 rounded-xl p-6">
-        <h2 className="font-display text-sm font-semibold text-[#0F2942] border-b border-slate-200 pb-3">
+      <section className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <h2 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-3">
           Notes &amp; Record Info
         </h2>
         <div className="mt-4 space-y-4">
           <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
             {client.notes?.trim() ? client.notes : 'No notes recorded for this client.'}
           </p>
-          <div className="pt-4 border-t border-slate-200 flex flex-wrap gap-x-8 gap-y-2 text-xs text-slate-500">
+          <div className="pt-4 border-t border-slate-100 flex flex-wrap gap-x-8 gap-y-2 text-xs text-slate-500">
             <div>
               Added:{' '}
               <span className="font-mono text-slate-700">

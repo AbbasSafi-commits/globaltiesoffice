@@ -44,8 +44,8 @@ function resolveInitialTypeState(clientType?: string): {
 }
 
 /**
- * Add / Edit Client form modal covering Personal, Identity, Client Type,
- * Status, and Notes sections with validation and Firestore persistence.
+ * Add / Edit Client centered modal covering Personal, Identity, Client Type,
+ * Status, and Notes sections inside grouped cards with a sticky Save/Cancel footer.
  */
 export function ClientFormModal({
   existingClient,
@@ -105,7 +105,6 @@ export function ClientFormModal({
     const resolvedClientType =
       typeDropdown === 'Other' ? customType.trim() : typeDropdown;
 
-    // Validation checks
     if (!cleanName) {
       setValidationError('Client Name is required.');
       return;
@@ -222,17 +221,17 @@ export function ClientFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="client-form-title"
     >
-      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden my-6">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+      <div className="w-full max-w-3xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
           <div>
             <h2
               id="client-form-title"
-              className="font-display text-base font-semibold text-[#0F2942]"
+              className="text-base font-semibold text-slate-900"
             >
               {isEditMode ? 'Edit Client' : 'Add Client'}
             </h2>
@@ -246,352 +245,354 @@ export function ClientFormModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 cursor-pointer"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
             aria-label="Close client form"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {validationError && (
-            <div
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-              role="alert"
-            >
-              {validationError}
-            </div>
-          )}
-
-          {/* 1. Personal */}
-          <section className="space-y-4">
-            <h3 className="font-display text-sm font-semibold text-slate-900 border-b border-slate-200 pb-2">
-              1. Personal Details
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="client-name"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Name <span className="text-red-600">*</span>
-                </label>
-                <input
-                  id="client-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={120}
-                  required
-                  placeholder="Full legal name"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-[#F8FAFC]/60">
+            {validationError && (
+              <div
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                role="alert"
+              >
+                {validationError}
               </div>
+            )}
 
-              <div>
-                <label
-                  htmlFor="client-father"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Father Name
-                </label>
-                <input
-                  id="client-father"
-                  type="text"
-                  value={fatherName}
-                  onChange={(e) => setFatherName(e.target.value)}
-                  maxLength={120}
-                  placeholder="Father's full name"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-mobile"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Mobile No <span className="text-red-600">*</span>
-                </label>
-                <input
-                  id="client-mobile"
-                  type="tel"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                  maxLength={30}
-                  required
-                  placeholder="e.g. 0300-1234567"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-email"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Email Address
-                </label>
-                <input
-                  id="client-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  maxLength={254}
-                  placeholder="client@example.com"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="client-address"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Address
-                </label>
-                <input
-                  id="client-address"
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  maxLength={500}
-                  placeholder="Street, city, and postal address"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 2. Identity */}
-          <section className="space-y-4">
-            <h3 className="font-display text-sm font-semibold text-slate-900 border-b border-slate-200 pb-2">
-              2. Identity &amp; Tax Information
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label
-                  htmlFor="client-cnic"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  CNIC Number
-                </label>
-                <input
-                  id="client-cnic"
-                  type="text"
-                  value={cnic}
-                  onChange={(e) => setCnic(formatCnicInput(e.target.value))}
-                  maxLength={15}
-                  placeholder="00000-0000000-0"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-cnic-issue"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  CNIC Issue Date
-                </label>
-                <input
-                  id="client-cnic-issue"
-                  type="date"
-                  value={cnicIssueDate}
-                  onChange={(e) => setCnicIssueDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-cnic-expiry"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  CNIC Expiry Date
-                </label>
-                <input
-                  id="client-cnic-expiry"
-                  type="date"
-                  value={cnicExpiryDate}
-                  onChange={(e) => setCnicExpiryDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-passport"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Passport Number
-                </label>
-                <input
-                  id="client-passport"
-                  type="text"
-                  value={passportNumber}
-                  onChange={(e) => setPassportNumber(e.target.value)}
-                  maxLength={40}
-                  placeholder="e.g. AB1234567"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono uppercase text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-passport-issue"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Passport Issue Date
-                </label>
-                <input
-                  id="client-passport-issue"
-                  type="date"
-                  value={passportIssueDate}
-                  onChange={(e) => setPassportIssueDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-passport-expiry"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Passport Expiry Date
-                </label>
-                <input
-                  id="client-passport-expiry"
-                  type="date"
-                  value={passportExpiryDate}
-                  onChange={(e) => setPassportExpiryDate(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-ntn"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  NTN
-                </label>
-                <input
-                  id="client-ntn"
-                  type="text"
-                  value={ntn}
-                  onChange={(e) => setNtn(e.target.value)}
-                  maxLength={40}
-                  placeholder="National Tax Number"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 3. Client Type & 4. Status */}
-          <section className="space-y-4">
-            <h3 className="font-display text-sm font-semibold text-slate-900 border-b border-slate-200 pb-2">
-              3. Classification &amp; Status
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="client-type"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Client Type <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="client-type"
-                  value={typeDropdown}
-                  onChange={(e) => setTypeDropdown(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                >
-                  {CLIENT_TYPE_DROPDOWN_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="client-status"
-                  className="block text-xs font-medium text-slate-700 mb-1.5"
-                >
-                  Status <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="client-status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as ClientStatus)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                >
-                  {CLIENT_STATUS_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {typeDropdown === 'Other' && (
-                <div className="sm:col-span-2">
+            {/* 1. Personal */}
+            <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
+              <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
+                1. Personal Details
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
                   <label
-                    htmlFor="client-custom-type"
+                    htmlFor="client-name"
                     className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    Custom Client Type <span className="text-red-600">*</span>
+                    Name <span className="text-red-600">*</span>
                   </label>
                   <input
-                    id="client-custom-type"
+                    id="client-name"
                     type="text"
-                    value={customType}
-                    onChange={(e) => setCustomType(e.target.value)}
-                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={120}
                     required
-                    placeholder="Enter custom client type (e.g. Tax Filing, Trademark)"
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
+                    placeholder="Full legal name"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
                   />
                 </div>
-              )}
-            </div>
-          </section>
 
-          {/* 5. Notes */}
-          <section className="space-y-2">
-            <label
-              htmlFor="client-notes"
-              className="block font-display text-sm font-semibold text-slate-900"
-            >
-              4. Notes
-            </label>
-            <textarea
-              id="client-notes"
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={2000}
-              placeholder="Optional internal office notes (do not store passwords here)"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-          </section>
+                <div>
+                  <label
+                    htmlFor="client-father"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Father Name
+                  </label>
+                  <input
+                    id="client-father"
+                    type="text"
+                    value={fatherName}
+                    onChange={(e) => setFatherName(e.target.value)}
+                    maxLength={120}
+                    placeholder="Father's full name"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
 
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+                <div>
+                  <label
+                    htmlFor="client-mobile"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Mobile No <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    id="client-mobile"
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    maxLength={30}
+                    required
+                    placeholder="e.g. 0300-1234567"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-email"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Email Address
+                  </label>
+                  <input
+                    id="client-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={254}
+                    placeholder="client@example.com"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="client-address"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Address
+                  </label>
+                  <input
+                    id="client-address"
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    maxLength={500}
+                    placeholder="Street, city, and postal address"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* 2. Identity */}
+            <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
+              <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
+                2. Identity &amp; Tax Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    htmlFor="client-cnic"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    CNIC Number
+                  </label>
+                  <input
+                    id="client-cnic"
+                    type="text"
+                    value={cnic}
+                    onChange={(e) => setCnic(formatCnicInput(e.target.value))}
+                    maxLength={15}
+                    placeholder="00000-0000000-0"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-cnic-issue"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    CNIC Issue Date
+                  </label>
+                  <input
+                    id="client-cnic-issue"
+                    type="date"
+                    value={cnicIssueDate}
+                    onChange={(e) => setCnicIssueDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-cnic-expiry"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    CNIC Expiry Date
+                  </label>
+                  <input
+                    id="client-cnic-expiry"
+                    type="date"
+                    value={cnicExpiryDate}
+                    onChange={(e) => setCnicExpiryDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-passport"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Passport Number
+                  </label>
+                  <input
+                    id="client-passport"
+                    type="text"
+                    value={passportNumber}
+                    onChange={(e) => setPassportNumber(e.target.value)}
+                    maxLength={40}
+                    placeholder="e.g. AB1234567"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono uppercase text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-passport-issue"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Passport Issue Date
+                  </label>
+                  <input
+                    id="client-passport-issue"
+                    type="date"
+                    value={passportIssueDate}
+                    onChange={(e) => setPassportIssueDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-passport-expiry"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Passport Expiry Date
+                  </label>
+                  <input
+                    id="client-passport-expiry"
+                    type="date"
+                    value={passportExpiryDate}
+                    onChange={(e) => setPassportExpiryDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-ntn"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    NTN
+                  </label>
+                  <input
+                    id="client-ntn"
+                    type="text"
+                    value={ntn}
+                    onChange={(e) => setNtn(e.target.value)}
+                    maxLength={40}
+                    placeholder="National Tax Number"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* 3. Client Type & 4. Status */}
+            <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
+              <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
+                3. Classification &amp; Status
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="client-type"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Client Type <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    id="client-type"
+                    value={typeDropdown}
+                    onChange={(e) => setTypeDropdown(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  >
+                    {CLIENT_TYPE_DROPDOWN_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-status"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Status <span className="text-red-600">*</span>
+                  </label>
+                  <select
+                    id="client-status"
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as ClientStatus)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  >
+                    {CLIENT_STATUS_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {typeDropdown === 'Other' && (
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="client-custom-type"
+                      className="block text-xs font-medium text-slate-700 mb-1.5"
+                    >
+                      Custom Client Type <span className="text-red-600">*</span>
+                    </label>
+                    <input
+                      id="client-custom-type"
+                      type="text"
+                      value={customType}
+                      onChange={(e) => setCustomType(e.target.value)}
+                      maxLength={80}
+                      required
+                      placeholder="Enter custom client type (e.g. Tax Filing, Trademark)"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    />
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* 4. Notes */}
+            <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-2 shadow-2xs">
+              <label
+                htmlFor="client-notes"
+                className="block text-sm font-semibold text-slate-900"
+              >
+                4. Notes
+              </label>
+              <textarea
+                id="client-notes"
+                rows={3}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                maxLength={2000}
+                placeholder="Optional internal office notes (do not store passwords here)"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+              />
+            </section>
+          </div>
+
+          <div className="sticky bottom-0 shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[#0F2942] px-5 py-2 text-sm font-medium text-white hover:bg-[#163859] disabled:opacity-60 transition-colors cursor-pointer"
+              className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {submitting
                 ? 'Saving...'

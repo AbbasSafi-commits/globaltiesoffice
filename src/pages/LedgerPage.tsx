@@ -159,20 +159,25 @@ export function LedgerPage() {
     );
   });
 
+  const getInitials = (name: string): string => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
-          Ledger
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Ledger</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Client balances across Global Ties Office, sorted by highest balance due. Click any client to open their ledger.
         </p>
       </div>
 
       {errorMsg && (
         <div
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 flex items-center justify-between gap-3"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 flex items-center justify-between gap-3"
           role="alert"
         >
           <div className="flex items-center gap-2">
@@ -192,35 +197,23 @@ export function LedgerPage() {
 
       {/* Office-wide Totals */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
           <div className="text-xs font-medium text-slate-500">Total Billed (Debit)</div>
-          <div className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-900">
+          <div className="mt-2 font-mono text-2xl font-semibold tabular-nums text-slate-900">
             {formatPkr(officeTotals.debit)}
           </div>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
           <div className="text-xs font-medium text-slate-500">Total Collected (Credit)</div>
-          <div className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-emerald-700">
+          <div className="mt-2 font-mono text-2xl font-semibold tabular-nums text-emerald-700">
             {formatPkr(officeTotals.credit)}
           </div>
         </div>
-        <div
-          className={`border rounded-xl p-5 ${
-            officeTotals.balance > 0
-              ? 'bg-red-50/70 border-red-200'
-              : 'bg-emerald-50/70 border-emerald-200'
-          }`}
-        >
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+          <div className="text-xs font-medium text-slate-500">Net Balance Due</div>
           <div
-            className={`text-xs font-medium ${
-              officeTotals.balance > 0 ? 'text-red-700' : 'text-emerald-800'
-            }`}
-          >
-            Net Balance Due
-          </div>
-          <div
-            className={`mt-1.5 font-mono text-xl font-semibold tabular-nums ${
-              officeTotals.balance > 0 ? 'text-red-800' : 'text-emerald-800'
+            className={`mt-2 font-mono text-2xl font-semibold tabular-nums ${
+              officeTotals.balance > 0 ? 'text-red-600' : 'text-emerald-700'
             }`}
           >
             {formatPkr(officeTotals.balance)}
@@ -229,8 +222,8 @@ export function LedgerPage() {
       </div>
 
       {/* Client Balances Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <div className="p-4 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search
               className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -242,7 +235,7 @@ export function LedgerPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search client name, mobile, or type..."
               aria-label="Search client ledgers"
-              className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
+              className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
             />
           </div>
         </div>
@@ -250,55 +243,71 @@ export function LedgerPage() {
         {loadingLedger ? (
           <div className="p-6 space-y-3" aria-busy="true">
             {[1, 2, 3, 4].map((row) => (
-              <div key={row} className="h-11 w-full rounded-md bg-slate-100 animate-pulse" />
+              <div key={row} className="h-11 w-full rounded-lg bg-slate-100 animate-pulse" />
             ))}
           </div>
         ) : summaries.length === 0 ? (
-          <div className="px-6 py-12 text-center">
+          <div className="px-6 py-14 text-center">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </div>
             <p className="text-sm font-medium text-slate-900">No ledger records found</p>
             <p className="mt-1 text-sm text-slate-500">
               Open a client profile and add a ledger entry to track debits, credits, and balances.
             </p>
           </div>
         ) : filteredSummaries.length === 0 ? (
-          <div className="px-6 py-12 text-center">
+          <div className="px-6 py-14 text-center">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </div>
             <p className="text-sm font-medium text-slate-900">No matching clients found</p>
-            <p className="mt-1 text-sm text-slate-500">
-              Try adjusting your search query.
-            </p>
+            <p className="mt-1 text-sm text-slate-500">Try adjusting your search query.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[640px]">
             <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-medium text-slate-500">
-                  <th className="px-6 py-3">Client</th>
-                  <th className="px-6 py-3 text-right whitespace-nowrap">Total Debit</th>
-                  <th className="px-6 py-3 text-right whitespace-nowrap">Total Credit</th>
-                  <th className="px-6 py-3 text-right whitespace-nowrap">Balance</th>
-                  <th className="px-6 py-3 text-right whitespace-nowrap">Open</th>
+              <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
+                <tr className="text-xs font-medium text-slate-500">
+                  <th className="px-6 py-3.5">Client</th>
+                  <th className="px-6 py-3.5 text-right whitespace-nowrap">Total Debit</th>
+                  <th className="px-6 py-3.5 text-right whitespace-nowrap">Total Credit</th>
+                  <th className="px-6 py-3.5 text-right whitespace-nowrap">Balance</th>
+                  <th className="px-6 py-3.5 text-right whitespace-nowrap">Open</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-100">
                 {filteredSummaries.map((row) => {
                   const owesMoney = row.balance > 0;
                   return (
                     <tr
                       key={row.clientId}
                       onClick={() => navigate(`/clients/${row.clientId}?tab=ledger`)}
-                      className="hover:bg-blue-50/40 transition-colors cursor-pointer"
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
                       <td className="px-6 py-3.5">
-                        <div className="font-medium text-slate-900">{row.clientName}</div>
-                        {(row.mobile || row.clientType) && (
-                          <div className="text-xs text-slate-500 mt-0.5">
-                            {row.clientType}
-                            {row.clientType && row.mobile ? ' · ' : ''}
-                            {row.mobile && (
-                              <span className="font-mono tabular-nums">{row.mobile}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                            {getInitials(row.clientName)}
+                          </span>
+                          <div>
+                            <div className="font-medium text-slate-900 group-hover:text-[#2563EB] transition-colors">
+                              {row.clientName}
+                            </div>
+                            {(row.mobile || row.clientType) && (
+                              <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-1.5">
+                                {row.clientType && (
+                                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                                    {row.clientType}
+                                  </span>
+                                )}
+                                {row.mobile && (
+                                  <span className="font-mono tabular-nums">{row.mobile}</span>
+                                )}
+                              </div>
                             )}
                           </div>
-                        )}
+                        </div>
                       </td>
                       <td className="px-6 py-3.5 text-right font-mono text-xs tabular-nums text-slate-900 whitespace-nowrap">
                         {formatPkr(row.totalDebit)}
@@ -308,13 +317,13 @@ export function LedgerPage() {
                       </td>
                       <td
                         className={`px-6 py-3.5 text-right font-mono text-xs font-semibold tabular-nums whitespace-nowrap ${
-                          owesMoney ? 'text-red-700' : 'text-emerald-700'
+                          owesMoney ? 'text-red-600' : 'text-emerald-700'
                         }`}
                       >
                         {formatPkr(row.balance)}
                       </td>
                       <td className="px-6 py-3.5 text-right whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#1D4ED8]">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#2563EB]">
                           <span>Ledger</span>
                           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
                         </span>

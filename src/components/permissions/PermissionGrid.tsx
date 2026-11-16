@@ -49,11 +49,11 @@ export function PermissionGrid({
   };
 
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
+    <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-600">
+            <tr className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
               <th className="px-4 py-3">Module</th>
               {ACTIONS.map((action) => (
                 <th key={action.key} className="px-3 py-3 text-center w-20">
@@ -63,14 +63,14 @@ export function PermissionGrid({
               <th className="px-4 py-3 text-right whitespace-nowrap">Quick Row</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="divide-y divide-slate-100">
             {MODULES.map((mod) => {
               const row = permissions[mod.key];
               const allChecked = row.view && row.add && row.edit && row.delete;
               const noneChecked = !row.view && !row.add && !row.edit && !row.delete;
 
               return (
-                <tr key={mod.key} className="hover:bg-slate-50/70 transition-colors">
+                <tr key={mod.key} className="hover:bg-slate-50/80 transition-colors">
                   <td className="px-4 py-3 font-medium text-slate-800 whitespace-nowrap">
                     {mod.label}
                   </td>
@@ -83,7 +83,7 @@ export function PermissionGrid({
                         disabled={disabled}
                         onChange={(e) => handleToggle(mod.key, action.key, e.target.checked)}
                         aria-label={`${mod.label} - ${action.label}`}
-                        className="h-4 w-4 rounded border-slate-300 text-[#0F2942] focus:ring-[#1D4ED8] cursor-pointer disabled:cursor-not-allowed"
+                        className="h-4 w-4 rounded border-slate-300 accent-[#2563EB] text-[#2563EB] focus:ring-[#2563EB] cursor-pointer disabled:cursor-not-allowed"
                       />
                     </td>
                   ))}
@@ -94,7 +94,7 @@ export function PermissionGrid({
                         type="button"
                         disabled={disabled || allChecked}
                         onClick={() => handleRowSetAll(mod.key, true)}
-                        className="font-medium text-[#1D4ED8] hover:text-[#0F2942] disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                        className="font-medium text-[#2563EB] hover:text-[#1D4ED8] disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
                       >
                         Select all
                       </button>

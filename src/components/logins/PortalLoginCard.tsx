@@ -143,11 +143,11 @@ export function PortalLoginCard({
   const pinRevealed = pinCountdown > 0;
 
   return (
-    <article className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <article className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
       {/* Card Header */}
-      <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="font-display text-base font-semibold text-[#0F2942] truncate">
+          <h3 className="text-base font-semibold text-slate-900 truncate">
             {login.departmentName}
           </h3>
           {safeHref ? (
@@ -155,7 +155,7 @@ export function PortalLoginCard({
               href={safeHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center gap-1.5 text-xs font-mono text-[#1D4ED8] hover:text-[#0F2942] hover:underline break-all"
+              className="mt-1 inline-flex items-center gap-1.5 text-xs font-mono text-[#2563EB] hover:text-[#1D4ED8] hover:underline break-all"
             >
               <span>{safeHref}</span>
               <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -171,7 +171,7 @@ export function PortalLoginCard({
               <button
                 type="button"
                 onClick={() => onEditClick(login)}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Edit</span>
@@ -181,7 +181,7 @@ export function PortalLoginCard({
               <button
                 type="button"
                 onClick={() => onDeleteClick(login)}
-                className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>Delete</span>
@@ -204,7 +204,7 @@ export function PortalLoginCard({
               <button
                 type="button"
                 onClick={handleCopyLoginId}
-                className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 shrink-0 cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 shrink-0 cursor-pointer"
                 title="Copy Login ID"
               >
                 <Copy className="h-3.5 w-3.5" aria-hidden="true" />
@@ -237,7 +237,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleToggleReveal('password')}
-                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200/70 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200/70 cursor-pointer"
                   aria-label={passwordRevealed ? 'Hide password' : 'Reveal password'}
                 >
                   {passwordRevealed ? (
@@ -255,7 +255,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleCopySecret('password')}
-                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-[#0F2942] hover:bg-blue-100/70 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#2563EB] hover:bg-blue-50 cursor-pointer"
                   aria-label="Copy password"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />
@@ -285,7 +285,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleToggleReveal('pin')}
-                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200/70 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-200/70 cursor-pointer"
                   aria-label={pinRevealed ? 'Hide PIN code' : 'Reveal PIN code'}
                 >
                   {pinRevealed ? (
@@ -303,7 +303,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleCopySecret('pin')}
-                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-[#0F2942] hover:bg-blue-100/70 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#2563EB] hover:bg-blue-50 cursor-pointer"
                   aria-label="Copy PIN code"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />

@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   BookOpen,
+  ChevronDown,
+  ChevronRight,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -37,13 +39,22 @@ function formatRoleLabel(role?: string): string {
     .join(' ');
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(/[\s.@_-]+/).filter(Boolean);
+  if (parts.length === 0) return 'GT';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
 /**
- * Primary office shell featuring a deep blue sidebar navigation,
- * responsive mobile drawer, and top user/role bar.
+ * Primary office shell featuring a fixed deep navy (#0F172A) sidebar,
+ * minimal top bar with breadcrumb and profile menu, and centered content container.
  */
 export function AppLayout() {
   const { profile, isSuperAdmin, can, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   const visibleNavItems = NAV_ITEMS.filter((item) => {
@@ -53,20 +64,49 @@ export function AppLayout() {
   });
 
   const activeNav = visibleNavItems.find((item) => location.pathname.startsWith(item.to));
-  const currentTitle = activeNav?.label ?? 'Dashboard';
+  const isClientDetail =
+    location.pathname.startsWith('/clients/') && location.pathname !== '/clients';
+  const currentTitle = isClientDetail ? 'Client Profile' : activeNav?.label ?? 'Dashboard';
 
   const roleLabel = formatRoleLabel(profile?.role);
   const displayName = profile?.fullName || profile?.email || 'Staff Member';
+  const initials = getInitials(displayName);
+
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [profileMenuOpen]);
 
   const renderSidebarContent = (onNavigate?: () => void) => (
-    <div className="flex h-full flex-col bg-[#0F2942] text-white">
-      <div className="flex h-16 items-center justify-between px-5 border-b border-white/10">
+    <div className="flex h-full flex-col bg-[#0F172A] text-white select-none">
+      <div className="flex h-16 items-center justify-between px-5 border-b border-white/10 shrink-0">
         <BrandLogo variant="light" size="sm" />
         {onNavigate && (
           <button
             type="button"
             onClick={onNavigate}
-            className="lg:hidden rounded-md p-1.5 text-slate-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+            className="lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
             aria-label="Close navigation menu"
           >
             <X className="h-5 w-5" />
@@ -74,7 +114,7 @@ export function AppLayout() {
         )}
       </div>
 
-      <nav className="flex-1 px-3 py-5 space-y-1" aria-label="Primary navigation">
+      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto" aria-label="Primary navigation">
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -83,9 +123,9 @@ export function AppLayout() {
               to={item.to}
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
+                `flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
                   isActive
-                    ? 'bg-[#1D4ED8] text-white'
+                    ? 'bg-[#2563EB] text-white shadow-xs'
                     : 'text-slate-300 hover:bg-white/8 hover:text-white'
                 }`
               }
@@ -97,24 +137,35 @@ export function AppLayout() {
         })}
       </nav>
 
-      <div className="border-t border-white/10 px-5 py-4">
-        <p className="text-xs text-slate-300 truncate">{profile?.email}</p>
+      {/* Sidebar Bottom User Profile */}
+      <div className="border-t border-white/10 px-4 py-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white ring-1 ring-white/15">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-white truncate">{displayName}</p>
+            <p className="text-xs text-slate-400 truncate">{roleLabel}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 border-r border-slate-200 print:hidden">
-        <div className="sticky top-0 h-screen">{renderSidebarContent()}</div>
+    <div className="min-h-screen bg-[#F8FAFC] flex">
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden lg:block w-64 shrink-0 print:hidden">
+        <div className="fixed inset-y-0 left-0 w-64 z-30 border-r border-slate-800/60">
+          {renderSidebarContent()}
+        </div>
       </aside>
 
       {/* Mobile Drawer Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden print:hidden">
           <div
-            className="fixed inset-0 bg-slate-900/50"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-[1px]"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
@@ -126,58 +177,113 @@ export function AppLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between gap-4 print:hidden">
+        <header className="sticky top-0 z-20 h-16 bg-white/95 backdrop-blur-xs border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between gap-4 print:hidden">
           <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8]"
+              className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2 text-sm min-w-0">
-              <span className="hidden sm:inline text-slate-400 whitespace-nowrap">
+
+            {/* Minimal Breadcrumb & Page Title */}
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm min-w-0">
+              <span className="hidden sm:inline text-slate-500 whitespace-nowrap">
                 Global Ties Office
               </span>
-              <span className="hidden sm:inline text-slate-300" aria-hidden="true">
-                /
-              </span>
-              <span className="font-display font-semibold text-slate-900 truncate">
-                {currentTitle}
-              </span>
-            </div>
+              <ChevronRight
+                className="hidden sm:inline h-3.5 w-3.5 text-slate-400 shrink-0"
+                aria-hidden="true"
+              />
+              {isClientDetail && (
+                <>
+                  <NavLink
+                    to="/clients"
+                    className="hidden sm:inline text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap"
+                  >
+                    Clients
+                  </NavLink>
+                  <ChevronRight
+                    className="hidden sm:inline h-3.5 w-3.5 text-slate-400 shrink-0"
+                    aria-hidden="true"
+                  />
+                </>
+              )}
+              <span className="font-semibold text-slate-900 truncate">{currentTitle}</span>
+            </nav>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="text-sm font-medium text-slate-800 truncate max-w-[140px] sm:max-w-[220px]">
-                {displayName}
-              </span>
-              <span
-                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap shrink-0 border ${
-                  isSuperAdmin
-                    ? 'bg-blue-50 text-[#0F2942] border-blue-200'
-                    : 'bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-              >
-                {roleLabel}
-              </span>
-            </div>
-
+          {/* Right Profile Menu */}
+          <div className="relative shrink-0" ref={profileMenuRef}>
             <button
               type="button"
-              onClick={signOut}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1D4ED8] cursor-pointer"
+              onClick={() => setProfileMenuOpen((prev) => !prev)}
+              aria-expanded={profileMenuOpen}
+              aria-haspopup="menu"
+              className="inline-flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
             >
-              <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>Sign Out</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB]/10 text-xs font-semibold text-[#2563EB] shrink-0">
+                {initials}
+              </span>
+              <span className="hidden sm:inline font-medium text-slate-800 max-w-[160px] truncate">
+                {displayName}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 text-slate-400 transition-transform ${
+                  profileMenuOpen ? 'rotate-180' : ''
+                }`}
+                aria-hidden="true"
+              />
             </button>
+
+            {profileMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white shadow-lg py-1.5 z-40"
+              >
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {displayName}
+                    </p>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap shrink-0 ${
+                        isSuperAdmin
+                          ? 'bg-blue-50 text-[#2563EB]'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {roleLabel}
+                    </span>
+                  </div>
+                  {profile?.email && (
+                    <p className="mt-0.5 text-xs text-slate-500 truncate">{profile.email}</p>
+                  )}
+                </div>
+
+                <div className="p-1.5">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      signOut();
+                    }}
+                    className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
-        <main className="flex-1 p-6 sm:p-8 lg:p-10 print:p-0">
-          <div className="max-w-5xl print:max-w-none">
+        <main className="flex-1 p-6 sm:p-8 print:p-0">
+          <div className="mx-auto max-w-6xl w-full print:max-w-none">
             <Outlet />
           </div>
         </main>

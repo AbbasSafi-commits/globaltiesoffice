@@ -150,17 +150,17 @@ export function LedgerEntryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 overflow-y-auto print:hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4 print:hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="ledger-entry-modal-title"
     >
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden my-8">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+      <div className="w-full max-w-lg max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
           <div>
             <h2
               id="ledger-entry-modal-title"
-              className="font-display text-base font-semibold text-[#0F2942]"
+              className="text-base font-semibold text-slate-900"
             >
               {isEditMode ? 'Edit Ledger Entry' : 'Add Ledger Entry'}
             </h2>
@@ -170,166 +170,168 @@ export function LedgerEntryModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 cursor-pointer"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
             aria-label="Close ledger modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {validationError && (
-            <div
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-              role="alert"
-            >
-              {validationError}
-            </div>
-          )}
-
-          {/* Type selector */}
-          <div>
-            <span className="block text-xs font-medium text-slate-700 mb-1.5">
-              Entry Type <span className="text-red-600">*</span>
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setType('Debit')}
-                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  type === 'Debit'
-                    ? 'border-red-300 bg-red-50 text-red-800'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            {validationError && (
+              <div
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                role="alert"
               >
-                Debit (Service Charged)
-              </button>
-              <button
-                type="button"
-                onClick={() => setType('Credit')}
-                className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
-                  type === 'Credit'
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                Credit (Payment Received)
-              </button>
-            </div>
-          </div>
+                {validationError}
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Type selector */}
+            <div>
+              <span className="block text-xs font-medium text-slate-700 mb-1.5">
+                Entry Type <span className="text-red-600">*</span>
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setType('Debit')}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                    type === 'Debit'
+                      ? 'border-red-300 bg-red-50 text-red-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Debit (Service Charged)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setType('Credit')}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                    type === 'Credit'
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Credit (Payment Received)
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="ledger-date"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Date <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="ledger-date"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="ledger-amount"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Amount (PKR) <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="ledger-amount"
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value)}
+                  required
+                  placeholder="e.g. 25000"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+            </div>
+
             <div>
               <label
-                htmlFor="ledger-date"
+                htmlFor="ledger-description"
                 className="block text-xs font-medium text-slate-700 mb-1.5"
               >
-                Date <span className="text-red-600">*</span>
+                Description <span className="text-red-600">*</span>
               </label>
               <input
-                id="ledger-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="ledger-amount"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Amount (PKR) <span className="text-red-600">*</span>
-              </label>
-              <input
-                id="ledger-amount"
-                type="number"
-                min="0.01"
-                step="any"
-                value={amountInput}
-                onChange={(e) => setAmountInput(e.target.value)}
-                required
-                placeholder="e.g. 25000"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="ledger-description"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
-            >
-              Description <span className="text-red-600">*</span>
-            </label>
-            <input
-              id="ledger-description"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              maxLength={300}
-              required
-              placeholder="e.g. SECP Company Registration Fee / Advance Cash Payment"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="ledger-method"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Payment Method
-              </label>
-              <select
-                id="ledger-method"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              >
-                {PAYMENT_METHOD_OPTIONS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="ledger-reference"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Reference / Receipt No
-              </label>
-              <input
-                id="ledger-reference"
+                id="ledger-description"
                 type="text"
-                value={referenceNo}
-                onChange={(e) => setReferenceNo(e.target.value)}
-                maxLength={100}
-                placeholder="Optional receipt or TXN ID"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={300}
+                required
+                placeholder="e.g. SECP Company Registration Fee / Advance Cash Payment"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
               />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="ledger-method"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Payment Method
+                </label>
+                <select
+                  id="ledger-method"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="ledger-reference"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Reference / Receipt No
+                </label>
+                <input
+                  id="ledger-reference"
+                  type="text"
+                  value={referenceNo}
+                  onChange={(e) => setReferenceNo(e.target.value)}
+                  maxLength={100}
+                  placeholder="Optional receipt or TXN ID"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
+          <div className="sticky bottom-0 shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-[#0F2942] px-5 py-2 text-sm font-medium text-white hover:bg-[#163859] disabled:opacity-60 transition-colors cursor-pointer"
+              className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {saving
                 ? 'Saving...'

@@ -275,17 +275,17 @@ export function DocumentUploadModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="upload-doc-modal-title"
     >
-      <div className="w-full max-w-2xl bg-white rounded-xl border border-slate-200 shadow-xl my-8 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
+      <div className="w-full max-w-2xl max-h-[90vh] flex flex-col bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200 bg-white flex items-center justify-between gap-4 shrink-0">
           <div>
             <h2
               id="upload-doc-modal-title"
-              className="font-display text-lg font-semibold text-[#0F2942]"
+              className="text-base font-semibold text-slate-900"
             >
               Upload Documents
             </h2>
@@ -300,279 +300,281 @@ export function DocumentUploadModal({
             type="button"
             onClick={onClose}
             disabled={uploading}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 cursor-pointer"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleStartUpload} className="p-6 space-y-5">
-          {validationError && (
+        <form onSubmit={handleStartUpload} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1">
+            {validationError && (
+              <div
+                role="alert"
+                className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-800 flex items-start gap-2"
+              >
+                <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{validationError}</span>
+              </div>
+            )}
+
+            {/* Client Selector when opened from main /documents page */}
+            {!fixedClientId && (
+              <div>
+                <label
+                  htmlFor="upload-client-select"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Client <span className="text-red-600">*</span>
+                </label>
+                <select
+                  id="upload-client-select"
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(e.target.value)}
+                  disabled={uploading}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  required
+                >
+                  <option value="">Select a client...</option>
+                  {(clientsList || []).map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.mobile ? `(${c.mobile})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Category + Note */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="doc-category-select"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Category <span className="text-red-600">*</span>
+                </label>
+                <select
+                  id="doc-category-select"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  disabled={uploading}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                >
+                  {DOCUMENT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="doc-note-input"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Note (Optional)
+                </label>
+                <input
+                  id="doc-note-input"
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  disabled={uploading}
+                  maxLength={500}
+                  placeholder="e.g. Front & back scan, attested copy"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+            </div>
+
+            {selectedCategory === 'Other' && (
+              <div>
+                <label
+                  htmlFor="doc-custom-category"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Custom Category Name (Optional)
+                </label>
+                <input
+                  id="doc-custom-category"
+                  type="text"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  disabled={uploading}
+                  maxLength={80}
+                  placeholder="e.g. Tax Return, Power of Attorney"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+            )}
+
+            {/* Drag-and-Drop / Multi-File Picker */}
             <div
-              role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-red-800 flex items-start gap-2"
-            >
-              <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{validationError}</span>
-            </div>
-          )}
-
-          {/* Client Selector when opened from main /documents page */}
-          {!fixedClientId && (
-            <div>
-              <label
-                htmlFor="upload-client-select"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Client <span className="text-red-600">*</span>
-              </label>
-              <select
-                id="upload-client-select"
-                value={selectedClientId}
-                onChange={(e) => setSelectedClientId(e.target.value)}
-                disabled={uploading}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                required
-              >
-                <option value="">Select a client...</option>
-                {(clientsList || []).map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.mobile ? `(${c.mobile})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Category + Note */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="doc-category-select"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Category <span className="text-red-600">*</span>
-              </label>
-              <select
-                id="doc-category-select"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                disabled={uploading}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              >
-                {DOCUMENT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="doc-note-input"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Note (Optional)
-              </label>
-              <input
-                id="doc-note-input"
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                disabled={uploading}
-                maxLength={500}
-                placeholder="e.g. Front & back scan, attested copy"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              />
-            </div>
-          </div>
-
-          {selectedCategory === 'Other' && (
-            <div>
-              <label
-                htmlFor="doc-custom-category"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Custom Category Name (Optional)
-              </label>
-              <input
-                id="doc-custom-category"
-                type="text"
-                value={customCategory}
-                onChange={(e) => setCustomCategory(e.target.value)}
-                disabled={uploading}
-                maxLength={80}
-                placeholder="e.g. Tax Return, Power of Attorney"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-              />
-            </div>
-          )}
-
-          {/* Drag-and-Drop / Multi-File Picker */}
-          <div
-            onDragOver={(e) => {
-              e.preventDefault();
-              if (!uploading) setDragActive(true);
-            }}
-            onDragLeave={() => setDragActive(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragActive(false);
-              if (!uploading) handleFilesSelected(e.dataTransfer.files);
-            }}
-            className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
-              dragActive
-                ? 'border-[#1D4ED8] bg-blue-50/60'
-                : 'border-slate-300 bg-slate-50/50 hover:border-slate-400'
-            }`}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-              onChange={(e) => {
-                handleFilesSelected(e.target.files);
-                e.target.value = '';
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (!uploading) setDragActive(true);
               }}
-              disabled={uploading}
-              className="hidden"
-            />
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#1D4ED8]">
-              <Upload className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <p className="mt-3 text-sm font-medium text-slate-900">
-              Drag and drop files here, or{' '}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+              onDragLeave={() => setDragActive(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                if (!uploading) handleFilesSelected(e.dataTransfer.files);
+              }}
+              className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+                dragActive
+                  ? 'border-[#2563EB] bg-blue-50/60'
+                  : 'border-slate-300 bg-[#F8FAFC] hover:border-slate-400'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                onChange={(e) => {
+                  handleFilesSelected(e.target.files);
+                  e.target.value = '';
+                }}
                 disabled={uploading}
-                className="text-[#1D4ED8] hover:text-[#0F2942] underline font-semibold cursor-pointer disabled:opacity-50"
-              >
-                browse files
-              </button>
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              Supports multiple JPG, PNG, and PDF files · Max 10 MB per file
-            </p>
-          </div>
+                className="hidden"
+              />
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
+                <Upload className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <p className="mt-3 text-sm font-medium text-slate-900">
+                Drag and drop files here, or{' '}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="text-[#2563EB] hover:text-[#1D4ED8] underline font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  browse files
+                </button>
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Supports multiple JPG, PNG, and PDF files · Max 10 MB per file
+              </p>
+            </div>
 
-          {/* File Queue & Individual Progress Bars */}
-          {queue.length > 0 && (
-            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-              {queue.map((item) => {
-                const isPdf = item.normalizedType === 'application/pdf';
-                return (
-                  <div
-                    key={item.localId}
-                    className={`rounded-lg border p-3 ${
-                      item.status === 'error'
-                        ? 'border-red-200 bg-red-50/50'
-                        : item.status === 'done'
-                          ? 'border-emerald-200 bg-emerald-50/40'
-                          : 'border-slate-200 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        {isPdf ? (
-                          <FileText
-                            className="h-4 w-4 text-red-600 shrink-0"
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <ImageIcon
-                            className="h-4 w-4 text-[#1D4ED8] shrink-0"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <div className="min-w-0">
-                          <div className="text-xs font-medium text-slate-900 truncate">
-                            {item.file.name}
+            {/* File Queue & Individual Progress Bars */}
+            {queue.length > 0 && (
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {queue.map((item) => {
+                  const isPdf = item.normalizedType === 'application/pdf';
+                  return (
+                    <div
+                      key={item.localId}
+                      className={`rounded-lg border p-3 ${
+                        item.status === 'error'
+                          ? 'border-red-200 bg-red-50/50'
+                          : item.status === 'done'
+                            ? 'border-emerald-200 bg-emerald-50/40'
+                            : 'border-slate-200 bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {isPdf ? (
+                            <FileText
+                              className="h-4 w-4 text-red-600 shrink-0"
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <ImageIcon
+                              className="h-4 w-4 text-[#2563EB] shrink-0"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <div className="text-xs font-medium text-slate-900 truncate">
+                              {item.file.name}
+                            </div>
+                            <div className="text-[11px] font-mono tabular-nums text-slate-500">
+                              {formatFileSize(item.file.size)}
+                            </div>
                           </div>
-                          <div className="text-[11px] font-mono tabular-nums text-slate-500">
-                            {formatFileSize(item.file.size)}
-                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {item.status === 'ready' && (
+                            <span className="text-xs text-slate-500">Ready</span>
+                          )}
+                          {item.status === 'uploading' && (
+                            <span className="text-xs font-mono tabular-nums text-[#2563EB]">
+                              {item.progress}%
+                            </span>
+                          )}
+                          {item.status === 'saving' && (
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-700">
+                              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                              Saving...
+                            </span>
+                          )}
+                          {item.status === 'done' && (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                              Uploaded
+                            </span>
+                          )}
+                          {item.status === 'error' && (
+                            <span className="text-xs font-medium text-red-700">Failed</span>
+                          )}
+
+                          {!uploading && item.status !== 'done' && (
+                            <button
+                              type="button"
+                              onClick={() => removeQueuedFile(item.localId)}
+                              className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 cursor-pointer"
+                              aria-label={`Remove ${item.file.name}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        {item.status === 'ready' && (
-                          <span className="text-xs text-slate-500">Ready</span>
-                        )}
-                        {item.status === 'uploading' && (
-                          <span className="text-xs font-mono tabular-nums text-[#1D4ED8]">
-                            {item.progress}%
-                          </span>
-                        )}
-                        {item.status === 'saving' && (
-                          <span className="inline-flex items-center gap-1 text-xs text-[#0F2942]">
-                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-                            Saving...
-                          </span>
-                        )}
-                        {item.status === 'done' && (
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
-                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            Uploaded
-                          </span>
-                        )}
-                        {item.status === 'error' && (
-                          <span className="text-xs font-medium text-red-700">Failed</span>
-                        )}
+                      {/* Progress bar */}
+                      {(item.status === 'uploading' ||
+                        item.status === 'saving' ||
+                        item.status === 'done') && (
+                        <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-200 ${
+                              item.status === 'done' ? 'bg-emerald-600' : 'bg-[#2563EB]'
+                            }`}
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                      )}
 
-                        {!uploading && item.status !== 'done' && (
-                          <button
-                            type="button"
-                            onClick={() => removeQueuedFile(item.localId)}
-                            className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-600 cursor-pointer"
-                            aria-label={`Remove ${item.file.name}`}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
+                      {item.error && (
+                        <p className="mt-1.5 text-xs text-red-700">{item.error}</p>
+                      )}
                     </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-                    {/* Progress bar */}
-                    {(item.status === 'uploading' ||
-                      item.status === 'saving' ||
-                      item.status === 'done') && (
-                      <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-200 ${
-                            item.status === 'done' ? 'bg-emerald-600' : 'bg-[#1D4ED8]'
-                          }`}
-                          style={{ width: `${item.progress}%` }}
-                        />
-                      </div>
-                    )}
-
-                    {item.error && (
-                      <p className="mt-1.5 text-xs text-red-700">{item.error}</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Modal Footer */}
-          <div className="pt-2 border-t border-slate-200 flex items-center justify-end gap-3">
+          {/* Sticky Modal Footer */}
+          <div className="sticky bottom-0 shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={uploading}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading || readyOrRetryCount === 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
             >
               {uploading ? (
                 <>

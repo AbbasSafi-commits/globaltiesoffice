@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { History } from 'lucide-react';
 import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 
@@ -126,10 +127,10 @@ export function ActivityLog() {
   }, []);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
       <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-4">
         <div>
-          <h2 className="font-display text-sm font-semibold text-slate-900">
+          <h2 className="text-sm font-semibold text-slate-900">
             Recent Activity Log
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -140,48 +141,51 @@ export function ActivityLog() {
 
       {loading ? (
         <div className="p-6 space-y-3" aria-busy="true" aria-label="Loading activity log">
-          {[1, 2, 3].map((row) => (
-            <div key={row} className="h-10 w-full rounded-md bg-slate-100 animate-pulse" />
+          {[1, 2, 3, 4].map((row) => (
+            <div key={row} className="h-11 w-full rounded-lg bg-slate-100 animate-pulse" />
           ))}
         </div>
       ) : error ? (
         <div className="px-6 py-10 text-center text-sm text-red-700">{error}</div>
       ) : entries.length === 0 ? (
         <div className="px-6 py-12 text-center">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+            <History className="h-5 w-5" aria-hidden="true" />
+          </div>
           <p className="text-sm font-medium text-slate-900">No activity recorded yet</p>
           <p className="mt-1 text-sm text-slate-500">
             Invites, permission changes, status updates, and removals will appear here.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[68vh] overflow-y-auto">
           <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-medium text-slate-500">
+            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+              <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
                 <th className="px-6 py-3">Time</th>
                 <th className="px-6 py-3">Who</th>
                 <th className="px-6 py-3">Action</th>
                 <th className="px-6 py-3">Target</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-100">
               {entries.map((entry) => (
-                <tr key={entry.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="px-6 py-3 text-xs font-mono tabular-nums text-slate-600 whitespace-nowrap">
+                <tr key={entry.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-3.5 text-xs font-mono tabular-nums text-slate-500 whitespace-nowrap">
                     {formatTimestamp(entry.createdAt)}
                   </td>
-                  <td className="px-6 py-3 font-mono text-xs text-slate-800 whitespace-nowrap">
+                  <td className="px-6 py-3.5 font-mono text-xs text-slate-800 whitespace-nowrap">
                     {entry.userEmail}
                   </td>
-                  <td className="px-6 py-3">
-                    <div className="font-medium text-slate-900">
+                  <td className="px-6 py-3.5">
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
                       {formatActionLabel(entry.action)}
-                    </div>
+                    </span>
                     {entry.details && (
-                      <div className="text-xs text-slate-500 mt-0.5">{entry.details}</div>
+                      <div className="text-xs text-slate-500 mt-1">{entry.details}</div>
                     )}
                   </td>
-                  <td className="px-6 py-3 font-mono text-xs text-slate-700 whitespace-nowrap">
+                  <td className="px-6 py-3.5 font-mono text-xs text-slate-600 whitespace-nowrap">
                     {entry.targetEmail || entry.targetId || entry.clientId || '—'}
                   </td>
                 </tr>

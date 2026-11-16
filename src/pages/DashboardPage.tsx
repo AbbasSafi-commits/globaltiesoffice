@@ -347,10 +347,10 @@ export function DashboardPage() {
       {/* Executive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
             Welcome back, {profile?.fullName?.split(' ')[0] || 'Staff'}
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-500">
             {todayFormatted} · Global Ties Office overview
           </p>
         </div>
@@ -359,7 +359,7 @@ export function DashboardPage() {
           {canClientsAdd && (
             <Link
               to="/clients"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Manage Clients</span>
@@ -368,9 +368,9 @@ export function DashboardPage() {
           {canDocumentsView && (
             <Link
               to="/documents"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
             >
-              <FolderOpen className="h-4 w-4" aria-hidden="true" />
+              <FolderOpen className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <span>Documents</span>
             </Link>
           )}
@@ -379,7 +379,7 @@ export function DashboardPage() {
 
       {errorMsg && (
         <div
-          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 flex items-center justify-between gap-3"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 flex items-center justify-between gap-3"
           role="alert"
         >
           <div className="flex items-center gap-2">
@@ -412,11 +412,11 @@ export function DashboardPage() {
 
       {/* Fallback card when a staff role has no Clients / Ledger / Super Admin access */}
       {!hasAnyDashboardModule && (
-        <div className="bg-white border border-slate-200 rounded-xl p-8">
-          <h2 className="font-display text-base font-semibold text-[#0F2942]">
+        <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-xs">
+          <h2 className="text-base font-semibold text-slate-900">
             Active Staff Workspace
           </h2>
-          <p className="mt-1.5 text-sm text-slate-600">
+          <p className="mt-1.5 text-sm text-slate-500">
             Your dashboard shows only the sections enabled for your account role ({profile?.role || 'Staff'}). Use the sidebar navigation to open your assigned modules.
           </p>
         </div>

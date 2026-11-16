@@ -17,17 +17,15 @@ export function ClientsByTypeChart({
   loading,
 }: ClientsByTypeChartProps) {
   return (
-    <section className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+    <section className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-sm font-semibold text-[#0F2942]">
-            Clients by Type
-          </h2>
+          <h2 className="text-sm font-semibold text-slate-900">Clients by Type</h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Distribution across primary service categories
           </p>
         </div>
-        <span className="font-mono text-xs tabular-nums text-slate-500">
+        <span className="text-xs font-medium tabular-nums text-slate-500">
           {loading ? '—' : `${totalClients} total`}
         </span>
       </div>
@@ -37,7 +35,7 @@ export function ClientsByTypeChart({
           {[1, 2, 3, 4].map((row) => (
             <div key={row} className="space-y-2">
               <div className="h-3.5 w-40 rounded bg-slate-100 animate-pulse" />
-              <div className="h-2.5 w-full rounded-full bg-slate-100 animate-pulse" />
+              <div className="h-2 w-full rounded-full bg-slate-100 animate-pulse" />
             </div>
           ))}
         </div>
@@ -55,7 +53,7 @@ export function ClientsByTypeChart({
         <div className="p-6 space-y-5 flex-1 flex flex-col justify-between">
           {/* Stacked Proportion Strip */}
           <div
-            className="h-3 w-full rounded-full bg-slate-100 overflow-hidden flex"
+            className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex gap-0.5"
             role="img"
             aria-label="Stacked bar showing client breakdown by type"
           >
@@ -81,14 +79,14 @@ export function ClientsByTypeChart({
                       className={`h-2.5 w-2.5 rounded-full ${slice.dotColor} shrink-0`}
                       aria-hidden="true"
                     />
-                    <span className="font-medium text-slate-800">{slice.label}</span>
+                    <span className="font-medium text-slate-700">{slice.label}</span>
                   </div>
-                  <div className="font-mono tabular-nums text-slate-700">
+                  <div className="tabular-nums text-slate-600">
                     <span className="font-semibold text-slate-900">{slice.count}</span>
                     <span className="text-slate-400 ml-1.5">({slice.percentage}%)</span>
                   </div>
                 </div>
-                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                   <div
                     className={`h-full rounded-full ${slice.barColor} transition-all duration-300`}
                     style={{

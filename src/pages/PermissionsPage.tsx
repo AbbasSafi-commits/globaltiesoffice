@@ -189,21 +189,21 @@ export function PermissionsPage() {
       {/* Page Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
             Permissions &amp; Staff Access
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-500">
             Invite authorized Gmail accounts, control module access, and review audit events.
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-1 p-1 bg-slate-200/70 rounded-lg self-start sm:self-auto">
+        <div className="inline-flex items-center gap-1 p-1 bg-slate-100 border border-slate-200/80 rounded-lg self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setActiveTab('users')}
             className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'users'
-                ? 'bg-white text-[#0F2942] shadow-sm'
+                ? 'bg-white text-[#2563EB] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -214,7 +214,7 @@ export function PermissionsPage() {
             onClick={() => setActiveTab('activity')}
             className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'activity'
-                ? 'bg-white text-[#0F2942] shadow-sm'
+                ? 'bg-white text-[#2563EB] shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -264,7 +264,7 @@ export function PermissionsPage() {
       {/* Confirmation Dialog for Disable / Delete */}
       {confirmAction && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-dialog-title"
@@ -272,7 +272,7 @@ export function PermissionsPage() {
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl p-6 space-y-4">
             <h2
               id="confirm-dialog-title"
-              className="font-display text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900"
             >
               {confirmAction.type === 'disable'
                 ? `Disable ${confirmAction.user.fullName}?`
@@ -311,10 +311,10 @@ export function PermissionsPage() {
                 type="button"
                 onClick={handleConfirmAction}
                 disabled={processingAction}
-                className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors cursor-pointer disabled:opacity-60 ${
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-60 ${
                   confirmAction.type === 'delete'
-                    ? 'bg-red-700 hover:bg-red-800'
-                    : 'bg-amber-700 hover:bg-amber-800'
+                    ? 'border border-red-300 bg-white text-red-700 hover:bg-red-50'
+                    : 'border border-amber-300 bg-white text-amber-800 hover:bg-amber-50'
                 }`}
               >
                 {processingAction
@@ -333,7 +333,7 @@ export function PermissionsPage() {
         <div
           role="status"
           aria-live="polite"
-          className={`fixed bottom-5 right-5 z-50 max-w-md rounded-lg border px-4 py-3 shadow-lg flex items-start gap-3 ${
+          className={`fixed bottom-5 right-5 z-50 max-w-md rounded-xl border px-4 py-3 shadow-lg flex items-start gap-3 ${
             toast.type === 'success'
               ? 'bg-white border-emerald-200 text-slate-900'
               : 'bg-red-50 border-red-200 text-red-900'

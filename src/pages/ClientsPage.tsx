@@ -142,10 +142,8 @@ export function ClientsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
-          Clients
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Clients</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Manage client personal records, identity documents, classifications, and status.
         </p>
       </div>
@@ -195,27 +193,29 @@ export function ClientsPage() {
       {/* Delete Confirmation Dialog */}
       {deletingClient && canDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-client-title"
         >
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl p-6 space-y-4">
-            <h2
-              id="delete-client-title"
-              className="font-display text-base font-semibold text-slate-900"
-            >
-              Delete {deletingClient.name}?
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              This permanently removes this client record from the office directory. This action will be recorded in the activity log.
-            </p>
-            <div className="pt-2 flex items-center justify-end gap-3">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+            <div className="p-6 space-y-2">
+              <h2
+                id="delete-client-title"
+                className="text-base font-semibold text-slate-900"
+              >
+                Delete {deletingClient.name}?
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                This permanently removes this client record from the office directory. This action will be recorded in the activity log.
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingClient(null)}
                 disabled={deleting}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -223,7 +223,7 @@ export function ClientsPage() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60 transition-colors cursor-pointer"
+                className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 transition-colors cursor-pointer"
               >
                 {deleting ? 'Deleting...' : 'Delete Client'}
               </button>

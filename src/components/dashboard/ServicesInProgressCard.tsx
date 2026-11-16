@@ -14,28 +14,35 @@ interface ServicesInProgressCardProps {
 function getCaseBadgeClass(status: CaseStatus): string {
   switch (status) {
     case 'In Progress':
-      return 'bg-blue-50 text-[#1D4ED8] border-blue-200';
+      return 'bg-blue-50 text-[#2563EB]';
     case 'Submitted':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-amber-50 text-amber-700';
     case 'Not Started':
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return 'bg-slate-100 text-slate-600';
     case 'Completed':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 text-emerald-700';
     case 'Rejected':
     default:
-      return 'bg-red-50 text-red-700 border-red-200';
+      return 'bg-red-50 text-red-700';
   }
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
 /**
- * Shows the latest 10 active/in-progress client services with client name and status.
+ * Shows the latest 10 active/in-progress client services with client name and status pill.
  */
 export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCardProps) {
   return (
-    <section className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+    <section className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-sm font-semibold text-[#0F2942]">
+          <h2 className="text-sm font-semibold text-slate-900">
             Services in Progress
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -44,7 +51,7 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
         </div>
         <Link
           to="/clients"
-          className="text-xs font-medium text-[#1D4ED8] hover:text-[#0F2942] whitespace-nowrap"
+          className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] whitespace-nowrap"
         >
           All clients
         </Link>
@@ -53,7 +60,7 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
       {loading ? (
         <div className="p-6 space-y-3" aria-busy="true">
           {[1, 2, 3, 4].map((row) => (
-            <div key={row} className="h-11 w-full rounded-md bg-slate-100 animate-pulse" />
+            <div key={row} className="h-11 w-full rounded-lg bg-slate-100 animate-pulse" />
           ))}
         </div>
       ) : cases.length === 0 ? (
@@ -69,19 +76,19 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-auto max-h-96">
           <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-medium text-slate-500">
+            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
+              <tr className="text-xs font-medium text-slate-500">
                 <th className="px-6 py-3">Service</th>
                 <th className="px-6 py-3">Client</th>
                 <th className="px-6 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-100">
               {cases.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="px-6 py-3">
+                <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-3.5">
                     <div className="font-medium text-slate-900">{item.serviceName}</div>
                     {(item.expectedDate || item.startDate) && (
                       <div className="text-xs font-mono tabular-nums text-slate-500 mt-0.5">
@@ -91,18 +98,21 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-3">
+                  <td className="px-6 py-3.5">
                     <Link
                       to={`/clients/${item.clientId}?tab=services`}
-                      className="inline-flex items-center gap-1 text-sm text-[#1D4ED8] hover:text-[#0F2942] hover:underline"
+                      className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-[#2563EB] group"
                     >
-                      <span>{item.clientName}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                        {getInitials(item.clientName)}
+                      </span>
+                      <span className="font-medium">{item.clientName}</span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0 group-hover:text-[#2563EB]" aria-hidden="true" />
                     </Link>
                   </td>
-                  <td className="px-6 py-3 text-right whitespace-nowrap">
+                  <td className="px-6 py-3.5 text-right whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-medium ${getCaseBadgeClass(
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getCaseBadgeClass(
                         item.status
                       )}`}
                     >

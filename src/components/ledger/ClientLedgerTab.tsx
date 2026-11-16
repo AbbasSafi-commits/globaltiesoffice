@@ -151,7 +151,7 @@ export function ClientLedgerTab({
       <div className="space-y-6 print:hidden">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
             <div className="text-xs font-medium text-slate-500">Total Debit</div>
             <div className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-900">
               {formatPkr(allTimeStatement.totalDebit)}
@@ -159,7 +159,7 @@ export function ClientLedgerTab({
             <div className="mt-1 text-xs text-slate-500">Total services charged</div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
             <div className="text-xs font-medium text-slate-500">Total Credit</div>
             <div className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-emerald-700">
               {formatPkr(allTimeStatement.totalCredit)}
@@ -167,30 +167,18 @@ export function ClientLedgerTab({
             <div className="mt-1 text-xs text-slate-500">Total payments received</div>
           </div>
 
-          <div
-            className={`border rounded-xl p-5 ${
-              balanceIsDue
-                ? 'bg-red-50/70 border-red-200'
-                : 'bg-emerald-50/70 border-emerald-200'
-            }`}
-          >
-            <div
-              className={`text-xs font-medium ${
-                balanceIsDue ? 'text-red-700' : 'text-emerald-800'
-              }`}
-            >
-              Balance Due
-            </div>
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+            <div className="text-xs font-medium text-slate-500">Balance Due</div>
             <div
               className={`mt-1.5 font-mono text-xl font-semibold tabular-nums ${
-                balanceIsDue ? 'text-red-800' : 'text-emerald-800'
+                balanceIsDue ? 'text-red-600' : 'text-emerald-700'
               }`}
             >
               {formatPkr(allTimeStatement.closingBalance)}
             </div>
             <div
               className={`mt-1 text-xs font-medium ${
-                balanceIsDue ? 'text-red-700' : 'text-emerald-700'
+                balanceIsDue ? 'text-red-600' : 'text-emerald-700'
               }`}
             >
               {balanceStatusText}
@@ -199,8 +187,8 @@ export function ClientLedgerTab({
         </div>
 
         {/* Ledger Controls & Table */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="p-4 sm:px-6 sm:py-4 border-b border-slate-200 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
             {/* Date Range Filter */}
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="flex items-center gap-2">
@@ -212,7 +200,7 @@ export function ClientLedgerTab({
                   type="date"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-[#1D4ED8] focus:outline-none"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
@@ -225,7 +213,7 @@ export function ClientLedgerTab({
                   type="date"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-[#1D4ED8] focus:outline-none"
+                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
                 />
               </div>
 
@@ -268,7 +256,7 @@ export function ClientLedgerTab({
                 <button
                   type="button"
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-xs font-medium text-white hover:bg-[#163859] transition-colors whitespace-nowrap cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shadow-xs cursor-pointer"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   <span>Add Entry</span>
@@ -280,12 +268,12 @@ export function ClientLedgerTab({
           {loading ? (
             <div className="p-6 space-y-3" aria-busy="true">
               {[1, 2, 3].map((row) => (
-                <div key={row} className="h-11 w-full rounded-md bg-slate-100 animate-pulse" />
+                <div key={row} className="h-11 w-full rounded-lg bg-slate-100 animate-pulse" />
               ))}
             </div>
           ) : entries.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
                 <BookOpen className="h-5 w-5" aria-hidden="true" />
               </div>
               <p className="text-sm font-medium text-slate-900">
@@ -298,7 +286,7 @@ export function ClientLedgerTab({
                 <button
                   type="button"
                   onClick={() => setShowAddModal(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] transition-colors cursor-pointer"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   <span>Add First Entry</span>
@@ -307,6 +295,9 @@ export function ClientLedgerTab({
             </div>
           ) : statement.rows.length === 0 ? (
             <div className="px-6 py-12 text-center">
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                <BookOpen className="h-5 w-5" aria-hidden="true" />
+              </div>
               <p className="text-sm font-medium text-slate-900">
                 No entries in selected date range
               </p>
@@ -315,21 +306,21 @@ export function ClientLedgerTab({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-auto max-h-[540px]">
               <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-medium text-slate-500">
-                    <th className="px-5 py-3 whitespace-nowrap">Date</th>
-                    <th className="px-5 py-3">Description</th>
-                    <th className="px-5 py-3 text-right whitespace-nowrap">Debit</th>
-                    <th className="px-5 py-3 text-right whitespace-nowrap">Credit</th>
-                    <th className="px-5 py-3 text-right whitespace-nowrap">Running Balance</th>
+                <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
+                  <tr className="text-xs font-medium text-slate-500">
+                    <th className="px-5 py-3.5 whitespace-nowrap">Date</th>
+                    <th className="px-5 py-3.5">Description</th>
+                    <th className="px-5 py-3.5 text-right whitespace-nowrap">Debit</th>
+                    <th className="px-5 py-3.5 text-right whitespace-nowrap">Credit</th>
+                    <th className="px-5 py-3.5 text-right whitespace-nowrap">Running Balance</th>
                     {(canEdit || canDelete) && (
-                      <th className="px-5 py-3 text-right whitespace-nowrap">Actions</th>
+                      <th className="px-5 py-3.5 text-right whitespace-nowrap">Actions</th>
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-100">
                   {fromDate && statement.openingBalance !== 0 && (
                     <tr className="bg-slate-50/60">
                       <td className="px-5 py-3 font-mono text-xs text-slate-500 whitespace-nowrap">
@@ -352,7 +343,7 @@ export function ClientLedgerTab({
                   )}
 
                   {statement.rows.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={row.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-700 whitespace-nowrap">
                         {row.date}
                       </td>
@@ -371,7 +362,7 @@ export function ClientLedgerTab({
                       </td>
                       <td
                         className={`px-5 py-3.5 text-right font-mono text-xs font-semibold tabular-nums whitespace-nowrap ${
-                          row.runningBalance > 0 ? 'text-red-700' : 'text-emerald-700'
+                          row.runningBalance > 0 ? 'text-red-600' : 'text-emerald-700'
                         }`}
                       >
                         {formatPkr(row.runningBalance)}
@@ -383,7 +374,7 @@ export function ClientLedgerTab({
                               <button
                                 type="button"
                                 onClick={() => setEditingEntry(row)}
-                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                               >
                                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>Edit</span>
@@ -393,7 +384,7 @@ export function ClientLedgerTab({
                               <button
                                 type="button"
                                 onClick={() => setDeletingEntry(row)}
-                                className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 cursor-pointer"
+                                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                                 <span>Delete</span>
@@ -439,32 +430,34 @@ export function ClientLedgerTab({
       {/* Delete Confirmation Dialog */}
       {deletingEntry && canDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 print:hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4 print:hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-ledger-title"
         >
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl p-6 space-y-4">
-            <h3
-              id="delete-ledger-title"
-              className="font-display text-base font-semibold text-slate-900"
-            >
-              Delete ledger entry?
-            </h3>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              This will change the balance. Are you sure you want to delete the{' '}
-              <span className="font-medium text-slate-900">{deletingEntry.type}</span> entry for{' '}
-              <span className="font-mono font-medium text-slate-900">
-                {formatPkr(deletingEntry.amount)}
-              </span>{' '}
-              ({deletingEntry.description})?
-            </p>
-            <div className="pt-2 flex items-center justify-end gap-3">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+            <div className="p-6 space-y-2">
+              <h3
+                id="delete-ledger-title"
+                className="text-base font-semibold text-slate-900"
+              >
+                Delete ledger entry?
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                This will change the balance. Are you sure you want to delete the{' '}
+                <span className="font-medium text-slate-900">{deletingEntry.type}</span> entry for{' '}
+                <span className="font-mono font-medium text-slate-900">
+                  {formatPkr(deletingEntry.amount)}
+                </span>{' '}
+                ({deletingEntry.description})?
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingEntry(null)}
                 disabled={deleting}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -472,7 +465,7 @@ export function ClientLedgerTab({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60 transition-colors cursor-pointer"
+                className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 transition-colors cursor-pointer"
               >
                 {deleting ? 'Deleting...' : 'Delete Entry'}
               </button>

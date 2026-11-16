@@ -151,17 +151,17 @@ export function LoginFormModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="portal-login-modal-title"
     >
-      <div className="w-full max-w-xl bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden my-8">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+      <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
           <div>
             <h2
               id="portal-login-modal-title"
-              className="font-display text-base font-semibold text-[#0F2942]"
+              className="text-base font-semibold text-slate-900"
             >
               {isEditMode ? 'Edit Portal Login' : 'Add Portal Login'}
             </h2>
@@ -173,198 +173,214 @@ export function LoginFormModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-md p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 cursor-pointer"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200/60 hover:text-slate-700 cursor-pointer"
             aria-label="Close portal login modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {validationError && (
-            <div
-              className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-              role="alert"
-            >
-              {validationError}
-            </div>
-          )}
-
-          {/* Department / Website Name with autocomplete suggestions */}
-          <div className="relative">
-            <label
-              htmlFor="login-department"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
-            >
-              Department / Website Name <span className="text-red-600">*</span>
-            </label>
-            <input
-              id="login-department"
-              type="text"
-              value={departmentName}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => {
-                window.setTimeout(() => setShowSuggestions(false), 150);
-              }}
-              onChange={(e) => {
-                setDepartmentName(e.target.value);
-                setShowSuggestions(true);
-              }}
-              maxLength={120}
-              required
-              autoComplete="off"
-              placeholder="e.g. FBR, SECP, Excise, Land Records, Embassy portal"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-            {showSuggestions && filteredSuggestions.length > 0 && (
-              <ul
-                role="listbox"
-                aria-label="Suggested portal names"
-                className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto py-1"
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="overflow-y-auto flex-1 p-6 space-y-5">
+            {validationError && (
+              <div
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+                role="alert"
               >
-                {filteredSuggestions.map((suggestion) => (
-                  <li key={suggestion}>
+                {validationError}
+              </div>
+            )}
+
+            {/* Portal Information Section */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-4 space-y-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Portal Information
+              </div>
+
+              {/* Department / Website Name with autocomplete suggestions */}
+              <div className="relative">
+                <label
+                  htmlFor="login-department"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Department / Website Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="login-department"
+                  type="text"
+                  value={departmentName}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => {
+                    window.setTimeout(() => setShowSuggestions(false), 150);
+                  }}
+                  onChange={(e) => {
+                    setDepartmentName(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  maxLength={120}
+                  required
+                  autoComplete="off"
+                  placeholder="e.g. FBR, SECP, Excise, Land Records, Embassy portal"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <ul
+                    role="listbox"
+                    aria-label="Suggested portal names"
+                    className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto py-1"
+                  >
+                    {filteredSuggestions.map((suggestion) => (
+                      <li key={suggestion}>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setDepartmentName(suggestion);
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-[#2563EB] cursor-pointer"
+                        >
+                          {suggestion}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="login-url"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Website Link (URL)
+                </label>
+                <input
+                  id="login-url"
+                  type="text"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  maxLength={500}
+                  placeholder="https://iris.fbr.gov.pk"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+            </div>
+
+            {/* Credentials & Notes Section */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/40 p-4 space-y-4">
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Credentials &amp; Notes
+              </div>
+
+              <div>
+                <label
+                  htmlFor="login-username"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
+                >
+                  Login ID / Username
+                </label>
+                <input
+                  id="login-username"
+                  type="text"
+                  value={loginId}
+                  onChange={(e) => setLoginId(e.target.value)}
+                  maxLength={160}
+                  autoComplete="off"
+                  placeholder="Username, CNIC, or portal ID"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="login-password"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="login-password"
+                      type={showFormPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      maxLength={200}
+                      autoComplete="new-password"
+                      placeholder="Enter password"
+                      className="w-full rounded-lg border border-slate-200 bg-white pl-3 pr-10 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    />
                     <button
                       type="button"
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setDepartmentName(suggestion);
-                        setShowSuggestions(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-[#0F2942] cursor-pointer"
+                      onClick={() => setShowFormPassword((prev) => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                      aria-label={showFormPassword ? 'Hide password' : 'Show password'}
                     >
-                      {suggestion}
+                      {showFormPassword ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                  </div>
+                </div>
 
-          <div>
-            <label
-              htmlFor="login-url"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
-            >
-              Website Link (URL)
-            </label>
-            <input
-              id="login-url"
-              type="text"
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              maxLength={500}
-              placeholder="https://iris.fbr.gov.pk"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="login-username"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
-            >
-              Login ID / Username
-            </label>
-            <input
-              id="login-username"
-              type="text"
-              value={loginId}
-              onChange={(e) => setLoginId(e.target.value)}
-              maxLength={160}
-              autoComplete="off"
-              placeholder="Username, CNIC, or portal ID"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label
-                htmlFor="login-password"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="login-password"
-                  type={showFormPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  maxLength={200}
-                  autoComplete="new-password"
-                  placeholder="Enter password"
-                  className="w-full rounded-lg border border-slate-200 pl-3 pr-10 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowFormPassword((prev) => !prev)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
-                  aria-label={showFormPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showFormPassword ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
+                <div>
+                  <label
+                    htmlFor="login-pin"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    PIN Code
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="login-pin"
+                      type={showFormPin ? 'text' : 'password'}
+                      value={pinCode}
+                      onChange={(e) => setPinCode(e.target.value)}
+                      maxLength={60}
+                      autoComplete="off"
+                      placeholder="Enter PIN code"
+                      className="w-full rounded-lg border border-slate-200 bg-white pl-3 pr-10 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowFormPin((prev) => !prev)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                      aria-label={showFormPin ? 'Hide PIN code' : 'Show PIN code'}
+                    >
+                      {showFormPin ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="login-pin"
-                className="block text-xs font-medium text-slate-700 mb-1.5"
-              >
-                PIN Code
-              </label>
-              <div className="relative">
-                <input
-                  id="login-pin"
-                  type={showFormPin ? 'text' : 'password'}
-                  value={pinCode}
-                  onChange={(e) => setPinCode(e.target.value)}
-                  maxLength={60}
-                  autoComplete="off"
-                  placeholder="Enter PIN code"
-                  className="w-full rounded-lg border border-slate-200 pl-3 pr-10 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowFormPin((prev) => !prev)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
-                  aria-label={showFormPin ? 'Hide PIN code' : 'Show PIN code'}
+              <div>
+                <label
+                  htmlFor="login-notes"
+                  className="block text-xs font-medium text-slate-700 mb-1.5"
                 >
-                  {showFormPin ? (
-                    <EyeOff className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                  )}
-                </button>
+                  Notes
+                </label>
+                <textarea
+                  id="login-notes"
+                  rows={3}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  maxLength={2000}
+                  placeholder="Optional security questions, recovery email, or portal instructions..."
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                />
               </div>
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="login-notes"
-              className="block text-xs font-medium text-slate-700 mb-1.5"
-            >
-              Notes
-            </label>
-            <textarea
-              id="login-notes"
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={2000}
-              placeholder="Optional security questions, recovery email, or portal instructions..."
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-[#1D4ED8]/15"
-            />
-          </div>
-
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
+          <div className="sticky bottom-0 shrink-0 px-6 py-4 border-t border-slate-200 bg-white flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
@@ -376,7 +392,7 @@ export function LoginFormModal({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-[#0F2942] px-5 py-2 text-sm font-medium text-white hover:bg-[#163859] disabled:opacity-60 transition-colors cursor-pointer"
+              className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors cursor-pointer"
             >
               {saving
                 ? 'Saving...'

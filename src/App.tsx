@@ -32,9 +32,9 @@ function AppRouter() {
 
   if (!profile || profile.isActive !== true) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-6">
         <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl p-8 text-center shadow-sm">
-          <h1 className="font-display text-lg font-semibold text-slate-900">
+          <h1 className="text-lg font-semibold text-slate-900">
             Session Verification Error
           </h1>
           <p className="mt-2 text-sm text-slate-600">
@@ -44,14 +44,14 @@ function AppRouter() {
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer"
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Retry
             </button>
             <button
               type="button"
               onClick={signOut}
-              className="rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] cursor-pointer"
+              className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors cursor-pointer"
             >
               Sign Out
             </button>

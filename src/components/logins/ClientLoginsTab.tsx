@@ -120,9 +120,9 @@ export function ClientLoginsTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="font-display text-sm font-semibold text-[#0F2942]">
+          <h2 className="text-sm font-semibold text-slate-900">
             Portal Logins ({logins.length})
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -134,7 +134,7 @@ export function ClientLoginsTab({
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-xs font-medium text-white hover:bg-[#163859] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span>Add Login</span>
@@ -143,17 +143,33 @@ export function ClientLoginsTab({
       </div>
 
       {loading ? (
-        <div className="space-y-4" aria-busy="true">
+        <div className="space-y-4" aria-busy="true" aria-label="Loading portal logins">
           {[1, 2].map((card) => (
             <div
               key={card}
-              className="bg-white border border-slate-200 rounded-xl p-6 h-36 animate-pulse"
-            />
+              className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden animate-pulse"
+            >
+              <div className="px-5 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="h-4 w-44 rounded bg-slate-200" />
+                  <div className="h-3 w-56 rounded bg-slate-100" />
+                </div>
+                <div className="h-7 w-24 rounded-lg bg-slate-200" />
+              </div>
+              <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+                {[1, 2, 3].map((col) => (
+                  <div key={col} className="space-y-2">
+                    <div className="h-3 w-20 rounded bg-slate-100" />
+                    <div className="h-9 w-full rounded-lg bg-slate-100" />
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : logins.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl px-6 py-12 text-center">
-          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs px-6 py-12 text-center">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
             <KeyRound className="h-5 w-5" aria-hidden="true" />
           </div>
           <p className="text-sm font-medium text-slate-900">
@@ -166,7 +182,7 @@ export function ClientLoginsTab({
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] transition-colors cursor-pointer"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors cursor-pointer"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Add First Login</span>
@@ -221,7 +237,7 @@ export function ClientLoginsTab({
       {/* Delete Confirmation Dialog */}
       {deletingLogin && canDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[1px] p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-login-title"
@@ -229,7 +245,7 @@ export function ClientLoginsTab({
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl p-6 space-y-4">
             <h3
               id="delete-login-title"
-              className="font-display text-base font-semibold text-slate-900"
+              className="text-base font-semibold text-slate-900"
             >
               Delete login for &ldquo;{deletingLogin.departmentName}&rdquo;?
             </h3>
@@ -249,7 +265,7 @@ export function ClientLoginsTab({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60 transition-colors cursor-pointer"
+                className="rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60 transition-colors cursor-pointer"
               >
                 {deleting ? 'Deleting...' : 'Delete Login'}
               </button>

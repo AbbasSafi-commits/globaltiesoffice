@@ -30,20 +30,27 @@ interface ToastState {
 function getStatusBadgeClass(status: ClientStatus): string {
   switch (status) {
     case 'Active':
-      return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return 'bg-emerald-50 text-emerald-700';
     case 'Pending':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-amber-50 text-amber-800';
     case 'Completed':
-      return 'bg-blue-50 text-[#0F2942] border-blue-200';
+      return 'bg-blue-50 text-[#2563EB]';
     case 'On Hold':
     default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
+      return 'bg-slate-100 text-slate-600';
   }
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 }
 
 /**
  * Detailed client profile page at /clients/:id with permission-filtered tabs
- * for Details, Business, Services, and upcoming module placeholders.
+ * for Details, Business, Services, Logins, Ledger, and Documents.
  */
 export function ClientProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -132,11 +139,11 @@ export function ClientProfilePage() {
     return (
       <div className="space-y-6" aria-busy="true" aria-label="Loading client profile">
         <div className="h-5 w-32 rounded bg-slate-200 animate-pulse" />
-        <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-3">
           <div className="h-7 w-64 rounded bg-slate-100 animate-pulse" />
           <div className="h-4 w-48 rounded bg-slate-100 animate-pulse" />
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-6 h-56 animate-pulse" />
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs h-56 animate-pulse" />
       </div>
     );
   }
@@ -146,22 +153,20 @@ export function ClientProfilePage() {
       <div className="space-y-4">
         <Link
           to="/clients"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#1D4ED8] hover:text-[#0F2942]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8]"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           <span>Back to clients</span>
         </Link>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
-          <h1 className="font-display text-lg font-semibold text-slate-900">
-            Client not found
-          </h1>
-          <p className="mt-1.5 text-sm text-slate-600">
+        <div className="bg-white border border-slate-200 rounded-xl p-10 text-center shadow-xs">
+          <h1 className="text-lg font-semibold text-slate-900">Client not found</h1>
+          <p className="mt-1.5 text-sm text-slate-500">
             This client record may have been deleted or the link is invalid.
           </p>
           <Link
             to="/clients"
-            className="mt-5 inline-flex items-center justify-center rounded-lg bg-[#0F2942] px-4 py-2 text-sm font-medium text-white hover:bg-[#163859] transition-colors"
+            className="mt-5 inline-flex items-center justify-center rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs"
           >
             Return to Clients
           </Link>
@@ -176,7 +181,7 @@ export function ClientProfilePage() {
       <div className="print:hidden">
         <Link
           to="/clients"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-[#0F2942] transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           <span>Back to clients</span>
@@ -184,35 +189,40 @@ export function ClientProfilePage() {
       </div>
 
       {/* Profile Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="font-display text-2xl font-semibold text-[#0F2942] tracking-tight">
-              {client.name}
-            </h1>
-            <span className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-[#0F2942] border border-blue-200">
-              {client.clientType}
-            </span>
-            <span
-              className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium border ${getStatusBadgeClass(
-                client.status
-              )}`}
-            >
-              {client.status}
-            </span>
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/10 text-sm font-semibold text-[#2563EB]">
+            {getInitials(client.name)}
           </div>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                {client.name}
+              </h1>
+              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                {client.clientType}
+              </span>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
+                  client.status
+                )}`}
+              >
+                {client.status}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" aria-hidden="true" />
-            <span className="font-mono tabular-nums">{client.mobile}</span>
-            {client.fatherName && (
-              <>
-                <span className="text-slate-300" aria-hidden="true">
-                  ·
-                </span>
-                <span>S/O {client.fatherName}</span>
-              </>
-            )}
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+              <span className="font-mono tabular-nums text-slate-700">{client.mobile}</span>
+              {client.fatherName && (
+                <>
+                  <span className="text-slate-300" aria-hidden="true">
+                    ·
+                  </span>
+                  <span>S/O {client.fatherName}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -220,9 +230,9 @@ export function ClientProfilePage() {
           <button
             type="button"
             onClick={() => setShowEditModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto shadow-xs cursor-pointer"
           >
-            <Pencil className="h-4 w-4" aria-hidden="true" />
+            <Pencil className="h-4 w-4 text-slate-500" aria-hidden="true" />
             <span>Edit</span>
           </button>
         )}
@@ -243,7 +253,7 @@ export function ClientProfilePage() {
                 }}
                 className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
-                    ? 'border-[#1D4ED8] text-[#0F2942]'
+                    ? 'border-[#2563EB] text-[#2563EB]'
                     : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
                 }`}
               >

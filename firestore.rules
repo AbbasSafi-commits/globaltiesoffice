@@ -52,6 +52,12 @@ service cloud.firestore {
       allow update: if can('documents', 'edit');
       allow delete: if can('documents', 'delete');
     }
+    match /documents/{docId}/chunks/{chunkId} {
+      allow read:   if can('documents', 'view');
+      allow create: if can('documents', 'add');
+      allow update: if false;
+      allow delete: if can('documents', 'delete');
+    }
     match /portalLogins/{id} {
       allow read:   if can('portal_logins', 'view');
       allow create: if can('portal_logins', 'add');

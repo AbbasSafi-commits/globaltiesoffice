@@ -237,6 +237,17 @@
       },
       "required": ["clientId", "fileName", "storagePath", "category", "fileType", "size", "uploadedBy", "createdAt"]
     },
+    "DocumentChunk": {
+      "title": "DocumentChunk",
+      "description": "Chunk payload stored under a client document record.",
+      "type": "object",
+      "properties": {
+        "index": { "type": "number" },
+        "data": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["index", "data"]
+    },
     "ActivityLogEntry": {
       "title": "ActivityLogEntry",
       "description": "Audit log record for staff permission and office management actions.",
@@ -283,6 +294,10 @@
     "/documents/{id}": {
       "schema": { "$ref": "ClientDocument" },
       "description": "Stores client document metadata linked to Firebase Storage objects by storagePath."
+    },
+    "/documents/{docId}/chunks/{chunkId}": {
+      "schema": { "$ref": "DocumentChunk" },
+      "description": "Stores chunk records under /documents/{docId}."
     },
     "/activityLog/{id}": {
       "schema": { "$ref": "ActivityLogEntry" },

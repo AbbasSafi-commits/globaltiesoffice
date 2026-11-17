@@ -1,4 +1,13 @@
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 
 export const DOCUMENT_CATEGORIES = [
@@ -13,20 +22,31 @@ export const DOCUMENT_CATEGORIES = [
 ] as const;
 
 /**
- * Storage rule enforces `request.resource.size < 10 * 1024 * 1024`.
+ * Max allowed file size per uploaded document (5 MB).
  */
-export const MAX_DOCUMENT_SIZE_BYTES = 10 * 1024 * 1024;
+export const MAX_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
+
+/**
+ * Max base64 characters per chunk stored in Firestore subcollection `documents/{docId}/chunks/{index}`.
+ */
+export const CHUNK_SIZE_CHARS = 700_000;
+
+/**
+ * Max pixel dimension on the longest side when compressing uploaded images in the browser.
+ */
+const MAX_IMAGE_DIMENSION_PX = 1600;
+const JPEG_COMPRESSION_QUALITY = 0.8;
 
 export interface DocumentRecord {
   id: string;
   clientId: string;
   clientName?: string;
   fileName: string;
-  storagePath: string;
   category: string;
   note?: string;
   fileType: string;
   size: number;
+  chunkCount?: number;
   uploadedBy: string;
   createdAt?: { toDate?: () => Date } | null;
 }
@@ -38,7 +58,7 @@ export type DocumentActivityAction =
   | 'deleted_document';
 
 /**
- * Normalizes and validates allowed document file types (JPG, PNG, PDF) and 10 MB max size.
+ * Normalizes and validates allowed document file types (JPG, PNG, PDF) and 5 MB max size.
  */
 export function validateDocumentFile(file: File): {
   valid: boolean;
@@ -49,7 +69,12 @@ export function validateDocumentFile(file: File): {
   const mime = (file.type || '').toLowerCase();
 
   let normalizedType = '';
-  if (mime === 'image/jpeg' || mime === 'image/jpg' || lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+  if (
+    mime === 'image/jpeg' ||
+    mime === 'image/jpg' ||
+    lowerName.endsWith('.jpg') ||
+    lowerName.endsWith('.jpeg')
+  ) {
     normalizedType = 'image/jpeg';
   } else if (mime === 'image/png' || lowerName.endsWith('.png')) {
     normalizedType = 'image/png';
@@ -73,11 +98,11 @@ export function validateDocumentFile(file: File): {
     };
   }
 
-  if (file.size >= MAX_DOCUMENT_SIZE_BYTES) {
+  if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
     return {
       valid: false,
       normalizedType,
-      error: `"${file.name}" exceeds the 10 MB maximum file size.`,
+      error: `"${file.name}" exceeds the 5 MB maximum file size.`,
     };
   }
 
@@ -88,24 +113,164 @@ export function validateDocumentFile(file: File): {
 }
 
 /**
- * Sanitizes a filename for safe Firebase Storage paths while keeping its extension.
+ * Compresses and resizes JPG/PNG images in the browser using an HTML5 canvas
+ * (max 1600px on longest side, JPEG quality 0.8). PDFs are returned unmodified.
  */
-export function sanitizeFileName(fileName: string): string {
-  const trimmed = fileName.trim();
-  const lastDot = trimmed.lastIndexOf('.');
-  const rawBase = lastDot > 0 ? trimmed.slice(0, lastDot) : trimmed;
-  const rawExt = lastDot > 0 ? trimmed.slice(lastDot + 1) : '';
+export async function prepareDocumentBlob(
+  file: File,
+  normalizedType: string
+): Promise<{ blob: Blob; fileType: string; size: number }> {
+  if (normalizedType === 'application/pdf') {
+    return {
+      blob: file,
+      fileType: 'application/pdf',
+      size: file.size,
+    };
+  }
 
-  const safeBase = rawBase
-    .replace(/[^a-zA-Z0-9_-]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_+|_+$/g, '')
-    .slice(0, 80);
+  const imageUrl = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () =>
+        reject(new Error(`Unable to read image "${file.name}" for compression.`));
+      element.src = imageUrl;
+    });
 
-  const safeExt = rawExt.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10);
+    const srcWidth = img.naturalWidth || img.width;
+    const srcHeight = img.naturalHeight || img.height;
+    const longestSide = Math.max(srcWidth, srcHeight);
 
-  const finalBase = safeBase || 'document';
-  return safeExt ? `${finalBase}.${safeExt}` : finalBase;
+    const scale =
+      longestSide > MAX_IMAGE_DIMENSION_PX
+        ? MAX_IMAGE_DIMENSION_PX / longestSide
+        : 1;
+    const targetWidth = Math.max(1, Math.round(srcWidth * scale));
+    const targetHeight = Math.max(1, Math.round(srcHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Browser canvas is unavailable for image compression.');
+    }
+
+    // Fill white background so transparent PNGs encode cleanly as JPEG
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, targetWidth, targetHeight);
+    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+    const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (result) => {
+          if (result) {
+            resolve(result);
+          } else {
+            reject(new Error(`Failed to compress image "${file.name}".`));
+          }
+        },
+        'image/jpeg',
+        JPEG_COMPRESSION_QUALITY
+      );
+    });
+
+    return {
+      blob: compressedBlob,
+      fileType: 'image/jpeg',
+      size: compressedBlob.size,
+    };
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
+}
+
+/**
+ * Converts a Blob into a raw base64 string (without the data URL prefix).
+ */
+export function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      const commaIndex = result.indexOf(',');
+      if (commaIndex === -1) {
+        reject(new Error('Failed to encode file to base64.'));
+        return;
+      }
+      resolve(result.slice(commaIndex + 1));
+    };
+    reader.onerror = () => {
+      reject(reader.error || new Error('Failed to read file bytes.'));
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Splits a base64 string into fixed-size chunks for Firestore subcollection storage.
+ */
+export function splitBase64IntoChunks(
+  base64Data: string,
+  chunkSize = CHUNK_SIZE_CHARS
+): string[] {
+  if (!base64Data) return [''];
+  const chunks: string[] = [];
+  for (let offset = 0; offset < base64Data.length; offset += chunkSize) {
+    chunks.push(base64Data.slice(offset, offset + chunkSize));
+  }
+  return chunks;
+}
+
+/**
+ * Converts a joined base64 string back into a Blob using the stored MIME type.
+ */
+export function base64ToBlob(base64Data: string, fileType: string): Blob {
+  const binary = atob(base64Data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: fileType || 'application/octet-stream' });
+}
+
+/**
+ * Reads all chunks from `documents/{docId}/chunks` ordered by `index`,
+ * joins their base64 payloads, and returns a Blob with the stored `fileType`.
+ */
+export async function readDocumentChunksToBlob(
+  docId: string,
+  fileType: string
+): Promise<Blob> {
+  const chunksQuery = query(
+    collection(db, 'documents', docId, 'chunks'),
+    orderBy('index', 'asc')
+  );
+  const snapshot = await getDocs(chunksQuery);
+  if (snapshot.empty) {
+    throw new Error('Document data chunks were not found in Firestore.');
+  }
+
+  const orderedParts: string[] = snapshot.docs.map((chunkDoc) => {
+    const data = chunkDoc.data() as { data?: string };
+    return typeof data.data === 'string' ? data.data : '';
+  });
+
+  return base64ToBlob(orderedParts.join(''), fileType);
+}
+
+/**
+ * Deletes every chunk in `documents/{docId}/chunks` first,
+ * then deletes the parent metadata document in `documents/{docId}`.
+ */
+export async function deleteDocumentWithChunks(docId: string): Promise<void> {
+  const chunksSnapshot = await getDocs(collection(db, 'documents', docId, 'chunks'));
+  for (const chunkDoc of chunksSnapshot.docs) {
+    await deleteDoc(doc(db, 'documents', docId, 'chunks', chunkDoc.id));
+  }
+  await deleteDoc(doc(db, 'documents', docId));
 }
 
 /**
@@ -156,8 +321,8 @@ export function extractFirebaseErrorCode(err: unknown): string {
 }
 
 /**
- * Translates Firebase Storage / Firestore errors into clear, actionable office toast messages
- * while always preserving the real Firebase error code for diagnostics.
+ * Translates Firestore document errors into clear office toast messages
+ * while always preserving the real Firebase error code when present.
  */
 export function getFriendlyDocumentError(err: unknown, context: string): string {
   const code = extractFirebaseErrorCode(err);
@@ -168,13 +333,7 @@ export function getFriendlyDocumentError(err: unknown, context: string): string 
     return `Network offline${codeSuffix}: unable to ${context}. Check your internet connection and try again.`;
   }
 
-  if (code === 'storage/bucket-not-found') {
-    return `Storage bucket not found (storage/bucket-not-found). Verify Firebase Storage is enabled and VITE_FIREBASE_STORAGE_BUCKET matches your Firebase Console.`;
-  }
-
   if (
-    code === 'storage/unauthorized' ||
-    code === 'storage/unauthenticated' ||
     code === 'permission-denied' ||
     message.toLowerCase().includes('permission') ||
     message.toLowerCase().includes('unauthorized')
@@ -182,69 +341,55 @@ export function getFriendlyDocumentError(err: unknown, context: string): string 
     return `Permission denied${codeSuffix}: you do not have access to ${context}.`;
   }
 
-  if (code === 'storage/object-not-found') {
-    return `The requested file could not be found in Firebase Storage${codeSuffix}.`;
+  if (code === 'not-found') {
+    return `The requested document could not be found in Firestore${codeSuffix}.`;
   }
 
-  if (code === 'storage/quota-exceeded') {
-    return `Storage quota exceeded${codeSuffix}. Please contact the system administrator.`;
+  if (code === 'resource-exhausted') {
+    return `Firestore quota or size limit exceeded${codeSuffix}.`;
   }
 
   if (
-    code === 'storage/retry-limit-exceeded' ||
-    code === 'storage/canceled' ||
     code === 'unavailable' ||
+    code === 'deadline-exceeded' ||
     message.toLowerCase().includes('network')
   ) {
-    return `Upload failed${codeSuffix} while trying to ${context}. Check your network connection and Storage configuration.`;
+    return `Network error${codeSuffix} while trying to ${context}. Please try again.`;
   }
 
   return `Could not ${context}${codeSuffix}. ${message || 'Please try again.'}`;
 }
 
 /**
- * Triggers a browser file download from a temporary Firebase Storage URL.
- * Attempts a Blob download first to preserve the exact filename, falling back to anchor download.
+ * Triggers a browser download from an Object URL with the original fileName,
+ * then revokes the Object URL once the download starts.
  */
-export async function triggerBrowserFileDownload(url: string, fileName: string): Promise<void> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(objectUrl);
-  } catch {
-    // Fallback if bucket CORS prevents fetch()
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+export function triggerBrowserObjectUrlDownload(
+  objectUrl: string,
+  fileName: string
+): void {
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 /**
- * Opens a temporary Storage URL in a new browser tab without calling window.open().
+ * Opens an Object URL in a new browser tab without calling window.open(),
+ * then revokes the Object URL after giving the browser tab time to load it.
  */
-export function openDocumentInNewTab(url: string): void {
+export function openDocumentObjectUrlInNewTab(objectUrl: string): void {
   const link = document.createElement('a');
-  link.href = url;
+  link.href = objectUrl;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
 
 /**

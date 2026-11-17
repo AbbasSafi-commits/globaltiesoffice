@@ -70,7 +70,7 @@ export function ClientDocumentsTab({
         <div>
           <h2 className="text-base font-semibold text-slate-900">Client Documents</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Securely archived JPG, PNG, and PDF files for {clientName}. Download URLs are generated on demand.
+            Securely archived JPG, PNG, and PDF files for {clientName}. Files are loaded on demand.
           </p>
         </div>
 

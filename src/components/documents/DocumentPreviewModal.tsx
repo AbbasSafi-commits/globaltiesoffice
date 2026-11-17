@@ -14,7 +14,7 @@ interface DocumentPreviewModalProps {
 }
 
 /**
- * Modal for previewing image documents (JPG, PNG) using a temporary on-demand download URL.
+ * Modal for previewing image documents (JPG, PNG) using a temporary Blob Object URL.
  */
 export function DocumentPreviewModal({
   documentItem,

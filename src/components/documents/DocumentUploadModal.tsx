@@ -9,17 +9,18 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable } from 'firebase/storage';
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { ClientRecord } from '../clients/clientTypes';
-import { db, handleFirestoreError, OperationType, storage } from '../../lib/firebase';
+import { db } from '../../lib/firebase';
 import {
+  blobToBase64,
   DOCUMENT_CATEGORIES,
   extractFirebaseErrorCode,
   formatFileSize,
   getFriendlyDocumentError,
   logDocumentActivity,
-  sanitizeFileName,
+  prepareDocumentBlob,
+  splitBase64IntoChunks,
   validateDocumentFile,
 } from './documentTypes';
 
@@ -45,8 +46,9 @@ interface DocumentUploadModalProps {
 }
 
 /**
- * Multi-file document upload modal enforcing JPG/PNG/PDF and < 10 MB limits,
- * displaying per-file progress bars, and writing metadata without permanent URLs.
+ * Multi-file document upload modal enforcing JPG/PNG/PDF and 5 MB limits,
+ * compressing images via canvas, splitting base64 into Firestore chunks,
+ * and displaying per-file progress bars.
  */
 export function DocumentUploadModal({
   clientId: fixedClientId,
@@ -134,10 +136,6 @@ export function DocumentUploadModal({
     targetClientId: string,
     targetClientName: string
   ): Promise<{ ok: boolean; errorMessage?: string }> => {
-    const timestamp = Date.now();
-    const safeName = sanitizeFileName(item.file.name);
-    const storagePath = `clients/${targetClientId}/${timestamp}_${safeName}`;
-
     updateQueuedFile(item.localId, (prev) => ({
       ...prev,
       status: 'uploading',
@@ -145,43 +143,47 @@ export function DocumentUploadModal({
       error: undefined,
     }));
 
+    let createdDocId = '';
+    const writtenChunkIds: string[] = [];
+
     try {
-      const storageRef = ref(storage, storagePath);
+      // 1. Compress/resize images (max 1600px, JPEG 0.8); keep PDFs unmodified
+      const prepared = await prepareDocumentBlob(item.file, item.normalizedType);
 
-      // Upload file bytes to Firebase Storage with real-time progress updates
-      await new Promise<void>((resolve, reject) => {
-        const task = uploadBytesResumable(storageRef, item.file, {
-          contentType: item.normalizedType,
-        });
+      // 2. Convert to base64 and split into 700,000-char chunks
+      const base64Data = await blobToBase64(prepared.blob);
+      const chunks = splitBase64IntoChunks(base64Data);
 
-        task.on(
-          'state_changed',
-          (snapshot) => {
-            const pct =
-              snapshot.totalBytes > 0
-                ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
-                : 0;
-            updateQueuedFile(item.localId, (prev) => ({
-              ...prev,
-              progress: pct,
-            }));
-          },
-          (err) => {
-            const code = extractFirebaseErrorCode(err);
-            console.error(
-              'Firebase Storage upload error:',
-              code || 'unknown',
-              err,
-              {
-                storagePath,
-                bucket: storage.app.options.storageBucket,
-              }
-            );
-            reject(err);
-          },
-          () => resolve()
-        );
+      // 3. Create the Firestore metadata document in collection "documents"
+      const createdRef = await addDoc(collection(db, 'documents'), {
+        clientId: targetClientId,
+        clientName: targetClientName,
+        fileName: item.file.name.trim(),
+        category: finalCategory,
+        note: note.trim(),
+        fileType: prepared.fileType,
+        size: prepared.size,
+        chunkCount: chunks.length,
+        uploadedBy: currentUserEmail,
+        createdAt: serverTimestamp(),
       });
+      createdDocId = createdRef.id;
+
+      // 4. Write each chunk in order under documents/{docId}/chunks/{index}
+      for (let index = 0; index < chunks.length; index += 1) {
+        const chunkId = String(index);
+        await setDoc(doc(db, 'documents', createdDocId, 'chunks', chunkId), {
+          index,
+          data: chunks[index],
+        });
+        writtenChunkIds.push(chunkId);
+
+        const pct = Math.round(((index + 1) / chunks.length) * 100);
+        updateQueuedFile(item.localId, (prev) => ({
+          ...prev,
+          progress: pct,
+        }));
+      }
 
       updateQueuedFile(item.localId, (prev) => ({
         ...prev,
@@ -189,34 +191,18 @@ export function DocumentUploadModal({
         status: 'saving',
       }));
 
-      // Save document metadata in Firestore only after the Storage upload succeeds
-      let newDocId = '';
+      // 5. Record audit log entry (non-blocking if logging fails)
       try {
-        const createdRef = await addDoc(collection(db, 'documents'), {
+        await logDocumentActivity({
+          userEmail: currentUserEmail,
+          action: 'uploaded_document',
           clientId: targetClientId,
-          clientName: targetClientName,
-          fileName: item.file.name.trim(),
-          storagePath,
-          category: finalCategory,
-          note: note.trim(),
-          fileType: item.normalizedType,
-          size: item.file.size,
-          uploadedBy: currentUserEmail,
-          createdAt: serverTimestamp(),
+          targetId: createdDocId,
+          details: `Uploaded "${item.file.name.trim()}" (${finalCategory}, ${formatFileSize(prepared.size)}) for "${targetClientName}"`,
         });
-        newDocId = createdRef.id;
-      } catch (firestoreErr) {
-        handleFirestoreError(firestoreErr, OperationType.CREATE, 'documents');
+      } catch {
+        // Upload already succeeded; keep document saved
       }
-
-      // Record audit log entry
-      await logDocumentActivity({
-        userEmail: currentUserEmail,
-        action: 'uploaded_document',
-        clientId: targetClientId,
-        targetId: newDocId,
-        details: `Uploaded "${item.file.name.trim()}" (${finalCategory}, ${formatFileSize(item.file.size)}) for "${targetClientName}"`,
-      });
 
       updateQueuedFile(item.localId, (prev) => ({
         ...prev,
@@ -228,9 +214,27 @@ export function DocumentUploadModal({
     } catch (err) {
       const code = extractFirebaseErrorCode(err);
       console.error('Document upload failed:', code || 'unknown', err);
+
+      // Roll back any chunks and metadata document already created for this failed file
+      if (createdDocId) {
+        for (const chunkId of writtenChunkIds) {
+          try {
+            await deleteDoc(doc(db, 'documents', createdDocId, 'chunks', chunkId));
+          } catch (cleanupErr) {
+            console.error('Failed to clean up chunk during rollback:', chunkId, cleanupErr);
+          }
+        }
+        try {
+          await deleteDoc(doc(db, 'documents', createdDocId));
+        } catch (cleanupErr) {
+          console.error('Failed to clean up metadata document during rollback:', createdDocId, cleanupErr);
+        }
+      }
+
       const friendly = getFriendlyDocumentError(err, `upload "${item.file.name}"`);
       updateQueuedFile(item.localId, (prev) => ({
         ...prev,
+        progress: 0,
         status: 'error',
         error: friendly,
       }));
@@ -325,7 +329,7 @@ export function DocumentUploadModal({
             <p className="text-xs text-slate-500 mt-0.5">
               {resolvedClient
                 ? `Uploading files for ${resolvedClient.name}`
-                : 'JPG, PNG, or PDF files up to 10 MB each'}
+                : 'JPG, PNG, or PDF files up to 5 MB each'}
             </p>
           </div>
 
@@ -489,7 +493,7 @@ export function DocumentUploadModal({
                 </button>
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Supports multiple JPG, PNG, and PDF files · Max 10 MB per file
+                Supports multiple JPG, PNG, and PDF files · Max 5 MB per file
               </p>
             </div>
 

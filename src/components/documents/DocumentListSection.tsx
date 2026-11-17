@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Download,
@@ -13,12 +13,10 @@ import {
   Search,
   Trash2,
 } from 'lucide-react';
-import { deleteDoc, doc } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 import { ClientRecord } from '../clients/clientTypes';
-import { db, handleFirestoreError, OperationType, storage } from '../../lib/firebase';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
 import {
+  deleteDocumentWithChunks,
   DOCUMENT_CATEGORIES,
   DocumentRecord,
   formatDocumentDate,
@@ -26,8 +24,9 @@ import {
   getFriendlyDocumentError,
   isImageDocument,
   logDocumentActivity,
-  openDocumentInNewTab,
-  triggerBrowserFileDownload,
+  openDocumentObjectUrlInNewTab,
+  readDocumentChunksToBlob,
+  triggerBrowserObjectUrlDownload,
 } from './documentTypes';
 
 interface DocumentListSectionProps {
@@ -45,7 +44,7 @@ interface DocumentListSectionProps {
 
 /**
  * Reusable document archive list (Table & Grid views) with search, category filter,
- * on-demand View / Download via getDownloadURL, Delete confirmation, and activity logging.
+ * on-demand View / Download from Firestore chunks, Delete confirmation, and activity logging.
  */
 export function DocumentListSection({
   documents,
@@ -66,6 +65,7 @@ export function DocumentListSection({
   const [busyAction, setBusyAction] = useState<{
     id: string;
     type: 'view' | 'download';
+    fileName: string;
   } | null>(null);
 
   const [previewData, setPreviewData] = useState<{
@@ -75,6 +75,20 @@ export function DocumentListSection({
 
   const [deletingDoc, setDeletingDoc] = useState<DocumentRecord | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Revoke any active image preview Object URL if the component unmounts
+  useEffect(() => {
+    const activeUrl = previewData?.url;
+    return () => {
+      if (activeUrl) {
+        URL.revokeObjectURL(activeUrl);
+      }
+    };
+  }, [previewData?.url]);
+
+  const closePreviewModal = () => {
+    setPreviewData(null);
+  };
 
   const resolveClientName = (item: DocumentRecord): string => {
     return clientsMap[item.clientId]?.name || item.clientName || 'Client';
@@ -120,10 +134,10 @@ export function DocumentListSection({
   }, [documents, categoryFilter, searchQuery, showClientColumn, clientsMap]);
 
   const handleView = async (item: DocumentRecord) => {
-    setBusyAction({ id: item.id, type: 'view' });
+    setBusyAction({ id: item.id, type: 'view', fileName: item.fileName });
     try {
-      const storageRef = ref(storage, item.storagePath);
-      const url = await getDownloadURL(storageRef);
+      const blob = await readDocumentChunksToBlob(item.id, item.fileType);
+      const objectUrl = URL.createObjectURL(blob);
       const clientLabel = resolveClientName(item);
 
       // Log view event
@@ -140,9 +154,9 @@ export function DocumentListSection({
       }
 
       if (isImageDocument(item.fileType, item.fileName)) {
-        setPreviewData({ item, url });
+        setPreviewData({ item, url: objectUrl });
       } else {
-        openDocumentInNewTab(url);
+        openDocumentObjectUrlInNewTab(objectUrl);
         onSuccess(`Opened "${item.fileName}" in a new tab.`);
       }
     } catch (err) {
@@ -153,13 +167,13 @@ export function DocumentListSection({
   };
 
   const handleDownload = async (item: DocumentRecord) => {
-    setBusyAction({ id: item.id, type: 'download' });
+    setBusyAction({ id: item.id, type: 'download', fileName: item.fileName });
     try {
-      const storageRef = ref(storage, item.storagePath);
-      const url = await getDownloadURL(storageRef);
+      const blob = await readDocumentChunksToBlob(item.id, item.fileType);
+      const objectUrl = URL.createObjectURL(blob);
       const clientLabel = resolveClientName(item);
 
-      await triggerBrowserFileDownload(url, item.fileName);
+      triggerBrowserObjectUrlDownload(objectUrl, item.fileName);
 
       try {
         await logDocumentActivity({
@@ -187,34 +201,21 @@ export function DocumentListSection({
     const clientLabel = resolveClientName(deletingDoc);
 
     try {
-      // 1. Delete file from Firebase Storage (tolerate missing object so orphaned docs can be cleaned)
-      try {
-        await deleteObject(ref(storage, deletingDoc.storagePath));
-      } catch (storageErr) {
-        const code =
-          typeof storageErr === 'object' && storageErr !== null && 'code' in storageErr
-            ? String((storageErr as { code?: unknown }).code || '')
-            : '';
-        if (code !== 'storage/object-not-found') {
-          throw storageErr;
-        }
-      }
+      // 1. Delete all chunk documents in subcollection first, then delete metadata document
+      await deleteDocumentWithChunks(deletingDoc.id);
 
-      // 2. Delete Firestore metadata record
+      // 2. Log deletion in activityLog
       try {
-        await deleteDoc(doc(db, 'documents', deletingDoc.id));
-      } catch (firestoreErr) {
-        handleFirestoreError(firestoreErr, OperationType.DELETE, `documents/${deletingDoc.id}`);
+        await logDocumentActivity({
+          userEmail: currentUserEmail,
+          action: 'deleted_document',
+          clientId: deletingDoc.clientId,
+          targetId: deletingDoc.id,
+          details: `Deleted "${deletingDoc.fileName}" (${deletingDoc.category}) for "${clientLabel}"`,
+        });
+      } catch {
+        // Non-blocking audit log write
       }
-
-      // 3. Log deletion in activityLog
-      await logDocumentActivity({
-        userEmail: currentUserEmail,
-        action: 'deleted_document',
-        clientId: deletingDoc.clientId,
-        targetId: deletingDoc.id,
-        details: `Deleted "${deletingDoc.fileName}" (${deletingDoc.category}) for "${clientLabel}"`,
-      });
 
       onSuccess(`Deleted "${deletingDoc.fileName}".`);
       setDeletingDoc(null);
@@ -306,6 +307,19 @@ export function DocumentListSection({
             </button>
           </div>
         </div>
+
+        {busyAction && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="px-6 py-2.5 border-b border-blue-100 bg-blue-50/70 flex items-center gap-2 text-xs font-medium text-[#2563EB]"
+          >
+            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" aria-hidden="true" />
+            <span>
+              Loading document chunks for &ldquo;{busyAction.fileName}&rdquo;...
+            </span>
+          </div>
+        )}
 
         {/* Body */}
         {loading ? (
@@ -597,7 +611,7 @@ export function DocumentListSection({
         <DocumentPreviewModal
           documentItem={previewData.item}
           previewUrl={previewData.url}
-          onClose={() => setPreviewData(null)}
+          onClose={closePreviewModal}
           onDownload={handleDownload}
         />
       )}
@@ -621,8 +635,8 @@ export function DocumentListSection({
               <p className="text-sm text-slate-600 leading-relaxed">
                 Are you sure you want to delete{' '}
                 <span className="font-medium text-slate-900">{deletingDoc.fileName}</span>{' '}
-                ({deletingDoc.category})? This will permanently remove both the file from
-                Firebase Storage and its record from Firestore.
+                ({deletingDoc.category})? This will permanently remove the document and
+                all of its stored data from Firestore.
               </p>
             </div>
             <div className="px-6 py-4 bg-slate-50/80 border-t border-slate-200 flex items-center justify-end gap-3">

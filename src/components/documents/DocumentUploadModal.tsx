@@ -15,6 +15,7 @@ import { ClientRecord } from '../clients/clientTypes';
 import { db, handleFirestoreError, OperationType, storage } from '../../lib/firebase';
 import {
   DOCUMENT_CATEGORIES,
+  extractFirebaseErrorCode,
   formatFileSize,
   getFriendlyDocumentError,
   logDocumentActivity,
@@ -132,11 +133,10 @@ export function DocumentUploadModal({
     item: QueuedFile,
     targetClientId: string,
     targetClientName: string
-  ): Promise<boolean> => {
+  ): Promise<{ ok: boolean; errorMessage?: string }> => {
     const timestamp = Date.now();
     const safeName = sanitizeFileName(item.file.name);
     const storagePath = `clients/${targetClientId}/${timestamp}_${safeName}`;
-    const storageRef = ref(storage, storagePath);
 
     updateQueuedFile(item.localId, (prev) => ({
       ...prev,
@@ -146,7 +146,9 @@ export function DocumentUploadModal({
     }));
 
     try {
-      // Upload file bytes to Firebase Storage with progress updates
+      const storageRef = ref(storage, storagePath);
+
+      // Upload file bytes to Firebase Storage with real-time progress updates
       await new Promise<void>((resolve, reject) => {
         const task = uploadBytesResumable(storageRef, item.file, {
           contentType: item.normalizedType,
@@ -164,7 +166,19 @@ export function DocumentUploadModal({
               progress: pct,
             }));
           },
-          (err) => reject(err),
+          (err) => {
+            const code = extractFirebaseErrorCode(err);
+            console.error(
+              'Firebase Storage upload error:',
+              code || 'unknown',
+              err,
+              {
+                storagePath,
+                bucket: storage.app.options.storageBucket,
+              }
+            );
+            reject(err);
+          },
           () => resolve()
         );
       });
@@ -175,7 +189,7 @@ export function DocumentUploadModal({
         status: 'saving',
       }));
 
-      // Save document metadata in Firestore (never store a permanent download URL)
+      // Save document metadata in Firestore only after the Storage upload succeeds
       let newDocId = '';
       try {
         const createdRef = await addDoc(collection(db, 'documents'), {
@@ -210,15 +224,17 @@ export function DocumentUploadModal({
         status: 'done',
       }));
 
-      return true;
+      return { ok: true };
     } catch (err) {
+      const code = extractFirebaseErrorCode(err);
+      console.error('Document upload failed:', code || 'unknown', err);
       const friendly = getFriendlyDocumentError(err, `upload "${item.file.name}"`);
       updateQueuedFile(item.localId, (prev) => ({
         ...prev,
         status: 'error',
         error: friendly,
       }));
-      return false;
+      return { ok: false, errorMessage: friendly };
     }
   };
 
@@ -240,20 +256,34 @@ export function DocumentUploadModal({
     setUploading(true);
     let successCount = 0;
     let failCount = 0;
+    let firstErrorMessage = '';
 
-    // Upload all queued files concurrently with independent progress bars
-    const results = await Promise.all(
-      pendingItems.map((item) =>
-        uploadSingleFile(item, resolvedClient.id, resolvedClient.name)
-      )
-    );
+    try {
+      // Upload all queued files concurrently with independent progress bars
+      const results = await Promise.all(
+        pendingItems.map((item) =>
+          uploadSingleFile(item, resolvedClient.id, resolvedClient.name)
+        )
+      );
 
-    results.forEach((ok) => {
-      if (ok) successCount += 1;
-      else failCount += 1;
-    });
-
-    setUploading(false);
+      results.forEach((result) => {
+        if (result.ok) {
+          successCount += 1;
+        } else {
+          failCount += 1;
+          if (!firstErrorMessage && result.errorMessage) {
+            firstErrorMessage = result.errorMessage;
+          }
+        }
+      });
+    } catch (unexpectedErr) {
+      const code = extractFirebaseErrorCode(unexpectedErr);
+      console.error('Unexpected upload batch error:', code || 'unknown', unexpectedErr);
+      failCount = pendingItems.length - successCount;
+      firstErrorMessage = getFriendlyDocumentError(unexpectedErr, 'upload documents');
+    } finally {
+      setUploading(false);
+    }
 
     if (failCount === 0 && successCount > 0) {
       onSuccess(
@@ -264,10 +294,13 @@ export function DocumentUploadModal({
       onClose();
     } else if (successCount > 0 && failCount > 0) {
       onError(
-        `${successCount} uploaded, ${failCount} failed. Review the error messages below.`
+        `${successCount} uploaded, ${failCount} failed. ${firstErrorMessage || 'Review the error messages below.'}`
       );
     } else if (failCount > 0) {
-      onError('Document upload failed. Check the file errors and your permissions.');
+      onError(
+        firstErrorMessage ||
+          'Document upload failed. Check the file errors and your permissions.'
+      );
     }
   };
 

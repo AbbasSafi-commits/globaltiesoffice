@@ -148,35 +148,46 @@ export function isImageDocument(fileType: string, fileName = ''): boolean {
   );
 }
 
+export function extractFirebaseErrorCode(err: unknown): string {
+  if (typeof err === 'object' && err !== null && 'code' in err) {
+    return String((err as { code?: unknown }).code || '').trim();
+  }
+  return '';
+}
+
 /**
- * Translates Firebase Storage / Firestore errors into clear, actionable office toast messages.
+ * Translates Firebase Storage / Firestore errors into clear, actionable office toast messages
+ * while always preserving the real Firebase error code for diagnostics.
  */
 export function getFriendlyDocumentError(err: unknown, context: string): string {
+  const code = extractFirebaseErrorCode(err);
+  const codeSuffix = code ? ` (${code})` : '';
+  const message = err instanceof Error ? err.message : String(err || '');
+
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
-    return `Network offline: unable to ${context}. Check your internet connection and try again.`;
+    return `Network offline${codeSuffix}: unable to ${context}. Check your internet connection and try again.`;
   }
 
-  const code =
-    typeof err === 'object' && err !== null && 'code' in err
-      ? String((err as { code?: unknown }).code || '')
-      : '';
-  const message = err instanceof Error ? err.message : String(err || '');
+  if (code === 'storage/bucket-not-found') {
+    return `Storage bucket not found (storage/bucket-not-found). Verify Firebase Storage is enabled and VITE_FIREBASE_STORAGE_BUCKET matches your Firebase Console.`;
+  }
 
   if (
     code === 'storage/unauthorized' ||
+    code === 'storage/unauthenticated' ||
     code === 'permission-denied' ||
     message.toLowerCase().includes('permission') ||
     message.toLowerCase().includes('unauthorized')
   ) {
-    return `Permission denied: you do not have access to ${context}. Note: if using non-owner accounts with Firebase Storage rules, ensure Storage rules allow access.`;
+    return `Permission denied${codeSuffix}: you do not have access to ${context}.`;
   }
 
   if (code === 'storage/object-not-found') {
-    return 'The requested file could not be found in Firebase Storage.';
+    return `The requested file could not be found in Firebase Storage${codeSuffix}.`;
   }
 
   if (code === 'storage/quota-exceeded') {
-    return 'Storage quota exceeded. Please contact the system administrator.';
+    return `Storage quota exceeded${codeSuffix}. Please contact the system administrator.`;
   }
 
   if (
@@ -185,10 +196,10 @@ export function getFriendlyDocumentError(err: unknown, context: string): string 
     code === 'unavailable' ||
     message.toLowerCase().includes('network')
   ) {
-    return `Network error while trying to ${context}. Please try again.`;
+    return `Upload failed${codeSuffix} while trying to ${context}. Check your network connection and Storage configuration.`;
   }
 
-  return `Could not ${context}. ${message || 'Please try again.'}`;
+  return `Could not ${context}${codeSuffix}. ${message || 'Please try again.'}`;
 }
 
 /**

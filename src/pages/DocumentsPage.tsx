@@ -152,7 +152,7 @@ export function DocumentsPage() {
         <div
           role="status"
           aria-live="polite"
-          className={`fixed bottom-5 right-5 z-50 max-w-md rounded-lg border px-4 py-3 shadow-lg flex items-start gap-3 ${
+          className={`fixed bottom-5 right-5 z-[60] max-w-md rounded-lg border px-4 py-3 shadow-lg flex items-start gap-3 ${
             toast.type === 'success'
               ? 'bg-white border-emerald-200 text-slate-900'
               : 'bg-red-50 border-red-200 text-red-900'

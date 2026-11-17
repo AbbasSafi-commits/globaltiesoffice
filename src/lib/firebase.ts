@@ -4,10 +4,28 @@ import { doc, getDocFromServer, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
+const resolvedStorageBucket =
+  import.meta.env.VITE_FIREBASE_STORAGE_BUCKET?.trim() ||
+  firebaseConfig.storageBucket;
+
+const resolvedFirebaseConfig = {
+  ...firebaseConfig,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY?.trim() || firebaseConfig.apiKey,
+  authDomain:
+    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN?.trim() || firebaseConfig.authDomain,
+  projectId:
+    import.meta.env.VITE_FIREBASE_PROJECT_ID?.trim() || firebaseConfig.projectId,
+  storageBucket: resolvedStorageBucket,
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim() ||
+    firebaseConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID?.trim() || firebaseConfig.appId,
+};
+
 /**
  * Initialize Firebase using the project configuration provisioned for this app.
  */
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(resolvedFirebaseConfig);
 
 /**
  * Firebase Authentication instance and Google Sign-In provider.
@@ -25,8 +43,19 @@ export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 /**
  * Firebase Storage instance for client document uploads and retrieval.
+ * Bound to the configured storage bucket with a 30s retry limit so failures surface quickly.
  */
-export const storage = getStorage(app);
+const storageBucketUrl = resolvedStorageBucket
+  ? resolvedStorageBucket.startsWith('gs://')
+    ? resolvedStorageBucket
+    : `gs://${resolvedStorageBucket}`
+  : undefined;
+
+export const storage = storageBucketUrl
+  ? getStorage(app, storageBucketUrl)
+  : getStorage(app);
+storage.maxUploadRetryTime = 30000;
+storage.maxOperationRetryTime = 30000;
 
 /**
  * Standard Firestore operation types for structured permission error reporting.

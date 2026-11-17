@@ -1,4 +1,4 @@
-import { AlertCircle, Globe, Lock, ShieldCheck } from 'lucide-react';
+import { AlertCircle, Lock, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -12,11 +12,15 @@ export function LoginPage() {
       {/* Left Brand Panel */}
       <div className="bg-[#0F172A] text-white px-8 py-10 sm:px-12 lg:px-16 lg:py-14 flex flex-col justify-between">
         <div className="inline-flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2563EB] text-white shadow-xs">
-            <Globe className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1 shadow-xs overflow-hidden shrink-0">
+            <img
+              src="/logo.png"
+              alt="Global Ties logo"
+              className="h-full w-full object-contain"
+            />
           </div>
           <span className="text-lg font-semibold tracking-tight text-white">
-            Global Ties Office
+            Global Ties
           </span>
         </div>
 
@@ -29,7 +33,7 @@ export function LoginPage() {
             Client operations, case tracking, and office records in one calm place.
           </h1>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Built exclusively for authorized Global Ties Office personnel to manage client
+            Built exclusively for authorized Global Ties personnel to manage client
             profiles, immigration &amp; business services, ledgers, and compliance documents.
           </p>
         </div>
@@ -43,12 +47,22 @@ export function LoginPage() {
       {/* Right Sign-In Card */}
       <div className="flex items-center justify-center px-6 py-12 sm:px-12">
         <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-sm p-8 sm:p-10">
-          <div className="mb-7">
+          <div className="mb-7 text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-white border border-slate-200 p-1.5 shadow-2xs overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Global Ties logo"
+                className="h-full w-full object-contain"
+              />
+            </div>
             <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Sign in to your account
+              Global Ties
             </h2>
-            <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-              Use your approved Google account to access Global Ties Office.
+            <p className="mt-1.5 text-sm font-medium text-slate-600">
+              Authorized staff only
+            </p>
+            <p className="mt-2 text-xs text-slate-500 leading-relaxed">
+              Use your approved Google account to sign in.
             </p>
           </div>
 

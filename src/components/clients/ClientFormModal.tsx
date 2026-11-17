@@ -238,7 +238,7 @@ export function ClientFormModal({
             <p className="text-xs text-slate-500 mt-0.5">
               {isEditMode
                 ? 'Update personal, identity, and classification details.'
-                : 'Register a new client record in Global Ties Office.'}
+                : 'Register a new client record in Global Ties.'}
             </p>
           </div>
           <button

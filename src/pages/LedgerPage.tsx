@@ -171,7 +171,7 @@ export function LedgerPage() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Ledger</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Client balances across Global Ties Office, sorted by highest balance due. Click any client to open their ledger.
+          Client balances across Global Ties, sorted by highest balance due. Click any client to open their ledger.
         </p>
       </div>
 

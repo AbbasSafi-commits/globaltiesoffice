@@ -99,7 +99,7 @@ export function UserTable({
           </div>
           <p className="text-sm font-medium text-slate-900">No users invited yet</p>
           <p className="mt-1 text-sm text-slate-500">
-            Click &ldquo;Invite User&rdquo; to grant a staff member access to Global Ties Office.
+            Click &ldquo;Invite User&rdquo; to grant a staff member access to Global Ties.
           </p>
         </div>
       ) : filteredUsers.length === 0 ? (

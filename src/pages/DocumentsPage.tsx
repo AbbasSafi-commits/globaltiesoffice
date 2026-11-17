@@ -106,7 +106,7 @@ export function DocumentsPage() {
             Documents
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Central archive of client scans, identity documents, and PDF records across Global Ties Office.
+            Central archive of client scans, identity documents, and PDF records across Global Ties.
           </p>
         </div>
 

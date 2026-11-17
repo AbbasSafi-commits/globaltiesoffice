@@ -1,4 +1,4 @@
-import { Globe, Printer, X } from 'lucide-react';
+import { Printer, X } from 'lucide-react';
 import { formatPkr, LedgerRowWithBalance } from './ledgerTypes';
 
 interface LedgerStatementModalProps {
@@ -82,11 +82,15 @@ export function LedgerStatementModal({
           {/* Office Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-200 pb-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center rounded-lg bg-[#0F172A] p-2 text-white">
-                <Globe className="h-6 w-6" strokeWidth={1.85} aria-hidden="true" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="Global Ties logo"
+                  className="h-full w-full object-contain"
+                />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Global Ties Office</h1>
+                <h1 className="text-xl font-bold text-slate-900">Global Ties</h1>
                 <p className="text-xs text-slate-500">Client Account Statement</p>
               </div>
             </div>

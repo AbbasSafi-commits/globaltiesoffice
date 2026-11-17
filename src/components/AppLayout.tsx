@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   FileText,
   LayoutDashboard,
@@ -53,6 +54,7 @@ function getInitials(name: string): string {
 export function AppLayout() {
   const { profile, isSuperAdmin, can, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -98,11 +100,20 @@ export function AppLayout() {
     };
   }, [profileMenuOpen]);
 
-  const renderSidebarContent = (onNavigate?: () => void) => (
+  const renderSidebarContent = (collapsed: boolean, onNavigate?: () => void) => (
     <div className="flex h-full flex-col bg-[#0F172A] text-white select-none">
-      <div className="flex h-16 items-center justify-between px-5 border-b border-white/10 shrink-0">
-        <BrandLogo variant="light" size="sm" />
-        {onNavigate && (
+      <div
+        className={`flex h-16 items-center border-b border-white/10 shrink-0 ${
+          collapsed ? 'justify-center px-2' : 'justify-between px-4'
+        }`}
+      >
+        <BrandLogo
+          variant="light"
+          size="md"
+          showLabel={!collapsed}
+          hideLabelOnMobile={Boolean(onNavigate)}
+        />
+        {onNavigate ? (
           <button
             type="button"
             onClick={onNavigate}
@@ -111,10 +122,34 @@ export function AppLayout() {
           >
             <X className="h-5 w-5" />
           </button>
+        ) : (
+          !collapsed && (
+            <button
+              type="button"
+              onClick={() => setSidebarCollapsed(true)}
+              className="hidden lg:inline-flex rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+              aria-label="Collapse sidebar"
+              title="Collapse sidebar"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )
         )}
       </div>
 
       <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto" aria-label="Primary navigation">
+        {collapsed && !onNavigate && (
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(false)}
+            className="w-full flex items-center justify-center rounded-lg px-2 py-2 mb-2 text-slate-400 hover:bg-white/8 hover:text-white transition-colors cursor-pointer"
+            aria-label="Expand sidebar"
+            title="Expand sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
+
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -122,8 +157,11 @@ export function AppLayout() {
               key={item.to}
               to={item.to}
               onClick={onNavigate}
+              title={collapsed ? item.label : undefined}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
+                `flex items-center rounded-lg py-2.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
+                  collapsed ? 'justify-center px-2' : 'gap-3 px-3.5'
+                } ${
                   isActive
                     ? 'bg-[#2563EB] text-white shadow-xs'
                     : 'text-slate-300 hover:bg-white/8 hover:text-white'
@@ -131,7 +169,7 @@ export function AppLayout() {
               }
             >
               <Icon className="h-4 w-4 shrink-0" strokeWidth={1.85} aria-hidden="true" />
-              <span>{item.label}</span>
+              {!collapsed && <span>{item.label}</span>}
             </NavLink>
           );
         })}
@@ -139,14 +177,19 @@ export function AppLayout() {
 
       {/* Sidebar Bottom User Profile */}
       <div className="border-t border-white/10 px-4 py-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white ring-1 ring-white/15">
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
+          <div
+            title={collapsed ? `${displayName} (${roleLabel})` : undefined}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-white ring-1 ring-white/15"
+          >
             {initials}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-white truncate">{displayName}</p>
-            <p className="text-xs text-slate-400 truncate">{roleLabel}</p>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white truncate">{displayName}</p>
+              <p className="text-xs text-slate-400 truncate">{roleLabel}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -155,9 +198,17 @@ export function AppLayout() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex">
       {/* Desktop Fixed Sidebar */}
-      <aside className="hidden lg:block w-64 shrink-0 print:hidden">
-        <div className="fixed inset-y-0 left-0 w-64 z-30 border-r border-slate-800/60">
-          {renderSidebarContent()}
+      <aside
+        className={`hidden lg:block shrink-0 print:hidden transition-[width] duration-200 ${
+          sidebarCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        <div
+          className={`fixed inset-y-0 left-0 z-30 border-r border-slate-800/60 transition-[width] duration-200 ${
+            sidebarCollapsed ? 'w-20' : 'w-64'
+          }`}
+        >
+          {renderSidebarContent(sidebarCollapsed)}
         </div>
       </aside>
 
@@ -170,7 +221,7 @@ export function AppLayout() {
             aria-hidden="true"
           />
           <aside className="relative z-10 w-64 max-w-[80vw] h-full shadow-xl">
-            {renderSidebarContent(() => setMobileMenuOpen(false))}
+            {renderSidebarContent(false, () => setMobileMenuOpen(false))}
           </aside>
         </div>
       )}
@@ -188,10 +239,14 @@ export function AppLayout() {
               <Menu className="h-5 w-5" />
             </button>
 
+            <div className="lg:hidden shrink-0">
+              <BrandLogo variant="dark" size="sm" showLabel={false} />
+            </div>
+
             {/* Minimal Breadcrumb & Page Title */}
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm min-w-0">
               <span className="hidden sm:inline text-slate-500 whitespace-nowrap">
-                Global Ties Office
+                Global Ties
               </span>
               <ChevronRight
                 className="hidden sm:inline h-3.5 w-3.5 text-slate-400 shrink-0"

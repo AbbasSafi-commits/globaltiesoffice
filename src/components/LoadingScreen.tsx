@@ -16,8 +16,16 @@ export function LoadingScreen({ message = 'Verifying authorized access...' }: Lo
       {/* Sidebar skeleton on desktop */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-[#0F172A] p-4">
         <div className="flex items-center gap-2.5 px-2 py-2.5 mb-6">
-          <div className="h-8 w-8 rounded-lg bg-white/15 animate-pulse" />
-          <div className="h-4 w-32 rounded bg-white/15 animate-pulse" />
+          <div className="h-9 w-9 shrink-0 rounded-lg bg-white p-0.5 overflow-hidden shadow-xs">
+            <img
+              src="/logo.png"
+              alt="Global Ties logo"
+              className="h-full w-full object-contain"
+            />
+          </div>
+          <span className="text-[15px] font-semibold tracking-tight text-white whitespace-nowrap">
+            Global Ties
+          </span>
         </div>
         <div className="space-y-2 flex-1">
           {[1, 2, 3, 4, 5].map((item) => (
@@ -40,7 +48,16 @@ export function LoadingScreen({ message = 'Verifying authorized access...' }: Lo
       {/* Main shell skeleton */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between">
-          <div className="h-4 w-44 rounded bg-slate-200 animate-pulse" />
+          <div className="flex items-center gap-3">
+            <div className="lg:hidden h-8 w-8 rounded-lg bg-white border border-slate-200 p-0.5 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="Global Ties logo"
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div className="h-4 w-44 rounded bg-slate-200 animate-pulse" />
+          </div>
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-slate-200 animate-pulse" />
             <div className="h-4 w-24 rounded bg-slate-200 animate-pulse hidden sm:block" />

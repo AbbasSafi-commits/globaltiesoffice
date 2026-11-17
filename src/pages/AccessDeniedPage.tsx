@@ -10,8 +10,17 @@ export function AccessDeniedPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-sm p-8 text-center">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-200">
-          <ShieldAlert className="h-6 w-6" strokeWidth={1.85} aria-hidden="true" />
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 shadow-2xs overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Global Ties logo"
+            className="h-full w-full object-contain"
+          />
+        </div>
+
+        <div className="mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700 border border-red-200">
+          <ShieldAlert className="h-3.5 w-3.5" strokeWidth={1.85} aria-hidden="true" />
+          <span>Restricted Workspace</span>
         </div>
 
         <h1 className="text-xl font-semibold text-slate-900">Access Denied</h1>

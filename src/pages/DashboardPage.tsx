@@ -30,7 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 
 /**
- * Main Global Ties Office dashboard displaying only the KPI cards and sections
+ * Main Global Ties dashboard displaying only the KPI cards and sections
  * that the signed-in staff member has permission to view.
  */
 export function DashboardPage() {
@@ -351,7 +351,7 @@ export function DashboardPage() {
             Welcome back, {profile?.fullName?.split(' ')[0] || 'Staff'}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            {todayFormatted} · Global Ties Office overview
+            {todayFormatted} · Global Ties overview
           </p>
         </div>
 

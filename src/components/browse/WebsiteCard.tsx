@@ -1,6 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
-import { getFaviconUrl, WebsiteRecord } from './browseTypes';
+import {
+  extractHostname,
+  getIconCandidateUrls,
+  resolvedIconCache,
+  WebsiteRecord,
+} from './browseTypes';
 
 interface WebsiteCardProps {
   website: WebsiteRecord;
@@ -40,8 +45,9 @@ function getFirstLetter(name: string): string {
 
 /**
  * Chrome New Tab style circular shortcut tile with 64px tinted circle,
- * 128px favicon (with colored first-letter fallback), centered single-line title,
- * Super Admin three-dot menu, and drag-and-drop support.
+ * multi-source icon fallback (custom iconData/iconUrl -> gstatic faviconV2 ->
+ * DuckDuckGo -> apple-touch-icon -> /favicon.ico -> letter avatar),
+ * in-memory caching, Super Admin three-dot menu, and drag-and-drop support.
  */
 export function WebsiteCard({
   website,
@@ -56,11 +62,71 @@ export function WebsiteCard({
   onDrop,
   onDragEnd,
 }: WebsiteCardProps) {
-  const [faviconFailed, setFaviconFailed] = useState(false);
+  const candidates = useMemo(
+    () => getIconCandidateUrls(website.url, website.iconData, website.iconUrl),
+    [website.url, website.iconData, website.iconUrl]
+  );
+
+  const cacheKey = useMemo(() => {
+    const host = extractHostname(website.url).replace(/^www\./i, '');
+    const customData = (website.iconData || '').trim();
+    const customUrl = (website.iconUrl || '').trim();
+    if (customData) return `${host}|data:${customData.slice(0, 48)}:${customData.length}`;
+    if (customUrl) return `${host}|url:${customUrl}`;
+    return host;
+  }, [website.url, website.iconData, website.iconUrl]);
+
+  const [sourceIndex, setSourceIndex] = useState<number>(() => {
+    if (cacheKey && resolvedIconCache.has(cacheKey)) {
+      const cached = resolvedIconCache.get(cacheKey);
+      if (cached === null) return candidates.length;
+      const idx = candidates.indexOf(cached || '');
+      if (idx !== -1) return idx;
+    }
+    return 0;
+  });
+
+  // Reset candidate index if website URL or custom icon changes
+  useEffect(() => {
+    if (cacheKey && resolvedIconCache.has(cacheKey)) {
+      const cached = resolvedIconCache.get(cacheKey);
+      if (cached === null) {
+        setSourceIndex(candidates.length);
+        return;
+      }
+      const idx = candidates.indexOf(cached || '');
+      if (idx !== -1) {
+        setSourceIndex(idx);
+        return;
+      }
+    }
+    setSourceIndex(0);
+  }, [cacheKey, candidates]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const faviconUrl = getFaviconUrl(website.url);
+  const currentIconSrc = sourceIndex < candidates.length ? candidates[sourceIndex] : null;
+
+  const advanceToNextIcon = () => {
+    setSourceIndex((prev) => {
+      const next = prev + 1;
+      if (next >= candidates.length && cacheKey) {
+        resolvedIconCache.set(cacheKey, null);
+      }
+      return next;
+    });
+  };
+
+  const handleIconLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    if (e.currentTarget.naturalWidth < 32) {
+      advanceToNextIcon();
+      return;
+    }
+    if (cacheKey && currentIconSrc) {
+      resolvedIconCache.set(cacheKey, currentIconSrc);
+    }
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -165,18 +231,21 @@ export function WebsiteCard({
       >
         <div
           className={`flex h-16 w-16 items-center justify-center rounded-full overflow-hidden transition-transform ${
-            faviconUrl && !faviconFailed
-              ? 'bg-[#2563EB]/10'
+            currentIconSrc
+              ? 'bg-[#2563EB]/10 p-3'
               : `${getAvatarColor(website.name)} text-white`
           }`}
         >
-          {faviconUrl && !faviconFailed ? (
+          {currentIconSrc ? (
             <img
-              src={faviconUrl}
+              key={currentIconSrc}
+              src={currentIconSrc}
               alt=""
-              className="h-8 w-8 object-contain"
+              className="h-full w-full object-contain"
               loading="lazy"
-              onError={() => setFaviconFailed(true)}
+              referrerPolicy="no-referrer"
+              onLoad={handleIconLoad}
+              onError={advanceToNextIcon}
             />
           ) : (
             <span className="text-xl font-semibold tracking-tight">

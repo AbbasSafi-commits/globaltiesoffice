@@ -61,7 +61,7 @@ export function LedgerStatementModal({
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Print / Save as PDF</span>
@@ -81,17 +81,17 @@ export function LedgerStatementModal({
         <div className="p-6 sm:p-10 space-y-6 overflow-y-auto flex-1 print:overflow-visible">
           {/* Office Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 border-b border-slate-200 pb-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 overflow-hidden">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-white border border-border p-1 overflow-hidden">
                 <img
                   src="/logo.png"
-                  alt="Global Ties logo"
+                  alt="Global Ties (Private) Limited logo"
                   className="h-full w-full object-contain"
                 />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900">Global Ties</h1>
-                <p className="text-xs text-slate-500">Client Account Statement</p>
+                <h1 className="text-xl font-bold text-primary">Global Ties (Private) Limited</h1>
+                <p className="text-xs text-muted">Client Account Statement</p>
               </div>
             </div>
 

@@ -23,7 +23,7 @@ export function RecentActivityCard({ entries, loading }: RecentActivityCardProps
         </div>
         <Link
           to="/permissions"
-          className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] whitespace-nowrap"
+          className="text-xs font-medium text-primary hover:text-primary-hover whitespace-nowrap"
         >
           Full log
         </Link>

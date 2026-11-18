@@ -114,7 +114,7 @@ export function DocumentsPage() {
           <button
             type="button"
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto shadow-xs cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0 self-start sm:self-auto shadow-xs cursor-pointer"
           >
             <Upload className="h-4 w-4" aria-hidden="true" />
             <span>Upload Documents</span>

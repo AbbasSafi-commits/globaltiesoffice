@@ -14,7 +14,7 @@ interface ServicesInProgressCardProps {
 function getCaseBadgeClass(status: CaseStatus): string {
   switch (status) {
     case 'In Progress':
-      return 'bg-blue-50 text-[#2563EB]';
+      return 'bg-blue-50 text-primary';
     case 'Submitted':
       return 'bg-amber-50 text-amber-700';
     case 'Not Started':
@@ -51,7 +51,7 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
         </div>
         <Link
           to="/clients"
-          className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] whitespace-nowrap"
+          className="text-xs font-medium text-primary hover:text-primary-hover whitespace-nowrap"
         >
           All clients
         </Link>
@@ -101,13 +101,13 @@ export function ServicesInProgressCard({ cases, loading }: ServicesInProgressCar
                   <td className="px-6 py-3.5">
                     <Link
                       to={`/clients/${item.clientId}?tab=services`}
-                      className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-[#2563EB] group"
+                      className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-primary group"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-primary">
                         {getInitials(item.clientName)}
                       </span>
                       <span className="font-medium">{item.clientName}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0 group-hover:text-[#2563EB]" aria-hidden="true" />
+                      <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0 group-hover:text-primary" aria-hidden="true" />
                     </Link>
                   </td>
                   <td className="px-6 py-3.5 text-right whitespace-nowrap">

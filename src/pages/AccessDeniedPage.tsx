@@ -8,7 +8,7 @@ export function AccessDeniedPage() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-page flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-sm p-8 text-center">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-lg bg-white border border-slate-200 p-1 shadow-2xs overflow-hidden">
           <img
@@ -39,7 +39,7 @@ export function AccessDeniedPage() {
           <button
             type="button"
             onClick={signOut}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
             <span>Sign Out</span>

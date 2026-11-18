@@ -68,14 +68,14 @@ export function UserTable({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by name or Gmail..."
             aria-label="Search staff by name or Gmail"
-            className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+            className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         <button
           type="button"
           onClick={onInviteClick}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
         >
           <UserPlus className="h-4 w-4" aria-hidden="true" />
           <span>Invite User</span>
@@ -115,7 +115,7 @@ export function UserTable({
       ) : (
         <div className="overflow-x-auto max-h-[68vh] overflow-y-auto">
           <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <thead className="sticky top-0 z-10 bg-table-head">
               <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
                 <th className="px-6 py-3">Name</th>
                 <th className="px-6 py-3">Gmail</th>
@@ -152,7 +152,7 @@ export function UserTable({
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           isSuper
-                            ? 'bg-blue-50 text-[#2563EB]'
+                            ? 'bg-blue-50 text-primary'
                             : 'bg-slate-100 text-slate-700'
                         }`}
                       >

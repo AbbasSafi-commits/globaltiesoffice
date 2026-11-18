@@ -109,7 +109,7 @@ export function PermissionGrid({
                             handleToggle(mod.key, action.key, e.target.checked, mod.viewOnly)
                           }
                           aria-label={`${mod.label} - ${action.label}`}
-                          className="h-4 w-4 rounded border-slate-300 accent-[#2563EB] text-[#2563EB] focus:ring-[#2563EB] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                          className="h-4 w-4 rounded border-slate-300 accent-primary text-primary focus:ring-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                         />
                       </td>
                     );
@@ -121,7 +121,7 @@ export function PermissionGrid({
                         type="button"
                         disabled={disabled || allChecked}
                         onClick={() => handleRowSetAll(mod.key, true, mod.viewOnly)}
-                        className="font-medium text-[#2563EB] hover:text-[#1D4ED8] disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
+                        className="font-medium text-primary hover:text-primary-hover disabled:text-slate-300 disabled:cursor-not-allowed cursor-pointer"
                       >
                         Select all
                       </button>

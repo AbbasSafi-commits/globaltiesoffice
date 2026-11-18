@@ -209,7 +209,7 @@ export function InviteModal({
                     placeholder="e.g. Sarah Jenkins"
                     maxLength={120}
                     required
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -227,7 +227,7 @@ export function InviteModal({
                     onChange={(e) => setGmail(e.target.value)}
                     placeholder="staffname@gmail.com"
                     required
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -250,7 +250,7 @@ export function InviteModal({
                   id="invite-role"
                   value={role}
                   onChange={(e) => handleRoleChange(e.target.value as RolePresetKey)}
-                  className="w-full sm:w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full sm:w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {ROLE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -325,7 +325,7 @@ export function InviteModal({
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-60 ${
                 confirmingSuperAdmin
                   ? 'border border-red-300 bg-white text-red-700 hover:bg-red-50'
-                  : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]'
+                  : 'bg-primary text-white hover:bg-primary-hover'
               }`}
             >
               {submitting

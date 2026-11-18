@@ -203,7 +203,7 @@ export function PermissionsPage() {
             onClick={() => setActiveTab('users')}
             className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'users'
-                ? 'bg-white text-[#2563EB] shadow-xs'
+                ? 'bg-white text-primary shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -214,7 +214,7 @@ export function PermissionsPage() {
             onClick={() => setActiveTab('activity')}
             className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === 'activity'
-                ? 'bg-white text-[#2563EB] shadow-xs'
+                ? 'bg-white text-primary shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >

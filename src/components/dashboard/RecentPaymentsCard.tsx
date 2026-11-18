@@ -30,7 +30,7 @@ export function RecentPaymentsCard({ payments, loading }: RecentPaymentsCardProp
         </div>
         <Link
           to="/ledger"
-          className="text-xs font-medium text-[#2563EB] hover:text-[#1D4ED8] whitespace-nowrap"
+          className="text-xs font-medium text-primary hover:text-primary-hover whitespace-nowrap"
         >
           Open ledger
         </Link>
@@ -72,13 +72,13 @@ export function RecentPaymentsCard({ payments, loading }: RecentPaymentsCardProp
                     <td className="px-6 py-3.5">
                       <Link
                         to={`/clients/${entry.clientId}?tab=ledger`}
-                        className="inline-flex items-center gap-2 font-medium text-slate-900 hover:text-[#2563EB] group"
+                        className="inline-flex items-center gap-2 font-medium text-slate-900 hover:text-primary group"
                       >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-primary">
                           {getInitials(clientName)}
                         </span>
                         <span>{clientName}</span>
-                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0 group-hover:text-[#2563EB]" aria-hidden="true" />
+                        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 shrink-0 group-hover:text-primary" aria-hidden="true" />
                       </Link>
                       <div className="mt-0.5 pl-8 text-xs text-slate-500 truncate max-w-[220px]">
                         {entry.description}

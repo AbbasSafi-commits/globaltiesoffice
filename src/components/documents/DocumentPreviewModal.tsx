@@ -52,7 +52,7 @@ export function DocumentPreviewModal({
               {documentItem.fileName}
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <span className="inline-flex items-center rounded-full bg-blue-50 text-[#2563EB] px-2.5 py-0.5 font-medium">
+              <span className="inline-flex items-center rounded-full bg-blue-50 text-primary px-2.5 py-0.5 font-medium">
                 {documentItem.category}
               </span>
               <span className="font-mono tabular-nums">
@@ -68,7 +68,7 @@ export function DocumentPreviewModal({
               type="button"
               onClick={handleDownloadClick}
               disabled={downloading}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-3.5 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-medium text-white hover:bg-primary-hover disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {downloading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />

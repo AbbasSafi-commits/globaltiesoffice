@@ -231,7 +231,7 @@ export function BrowsePage() {
         className="w-full max-w-[720px]"
         role="search"
       >
-        <div className="flex h-14 items-center gap-3 rounded-full bg-white border border-slate-200/80 px-5 shadow-md hover:shadow-lg focus-within:shadow-lg focus-within:border-[#2563EB]/40 transition-shadow">
+        <div className="flex h-14 items-center gap-3 rounded-full bg-white border border-slate-200/80 px-5 shadow-md hover:shadow-lg focus-within:shadow-lg focus-within:border-primary/40 transition-shadow">
           {/* Decorative Left Plus Icon */}
           <Plus className="h-5 w-5 text-slate-400 shrink-0" aria-hidden="true" />
 
@@ -251,7 +251,7 @@ export function BrowsePage() {
           <button
             type="submit"
             aria-label="Search"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-[#2563EB]/10 hover:text-[#2563EB] transition-colors shrink-0 cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-primary/10 hover:text-primary transition-colors shrink-0 cursor-pointer"
           >
             <Search className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -287,9 +287,9 @@ export function BrowsePage() {
                     setEditingWebsite(null);
                     setShowFormModal(true);
                   }}
-                  className="group flex flex-col items-center gap-2.5 rounded-2xl px-4 py-3.5 hover:-translate-y-0.5 hover:bg-slate-200/55 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+                  className="group flex flex-col items-center gap-2.5 rounded-2xl px-4 py-3.5 hover:-translate-y-0.5 hover:bg-slate-200/55 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/10 text-[#2563EB] group-hover:bg-[#2563EB]/15 transition-colors">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
                     <Plus className="h-6 w-6" aria-hidden="true" />
                   </div>
                   <span className="text-sm font-medium text-slate-800 whitespace-nowrap">
@@ -329,9 +329,9 @@ export function BrowsePage() {
                   setEditingWebsite(null);
                   setShowFormModal(true);
                 }}
-                className="group flex flex-col items-center gap-2.5 rounded-2xl px-2 py-3.5 hover:-translate-y-0.5 hover:bg-slate-200/55 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+                className="group flex flex-col items-center gap-2.5 rounded-2xl px-2 py-3.5 hover:-translate-y-0.5 hover:bg-slate-200/55 transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2563EB]/10 text-[#2563EB] group-hover:bg-[#2563EB]/15 transition-colors">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary group-hover:bg-primary/15 transition-colors">
                   <Plus className="h-6 w-6" aria-hidden="true" />
                 </div>
                 <span className="w-full px-1 text-center text-sm font-medium text-slate-800 truncate">

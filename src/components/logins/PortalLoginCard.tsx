@@ -155,7 +155,7 @@ export function PortalLoginCard({
               href={safeHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center gap-1.5 text-xs font-mono text-[#2563EB] hover:text-[#1D4ED8] hover:underline break-all"
+              className="mt-1 inline-flex items-center gap-1.5 text-xs font-mono text-primary hover:text-primary-hover hover:underline break-all"
             >
               <span>{safeHref}</span>
               <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -170,7 +170,7 @@ export function PortalLoginCard({
             <button
               type="button"
               onClick={() => window.open(safeHref, '_blank', 'noopener,noreferrer')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
             >
               <span>Open portal</span>
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -263,7 +263,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleCopySecret('password')}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#2563EB] hover:bg-blue-50 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-blue-50 cursor-pointer"
                   aria-label="Copy password"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />
@@ -311,7 +311,7 @@ export function PortalLoginCard({
                 <button
                   type="button"
                   onClick={() => handleCopySecret('pin')}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[#2563EB] hover:bg-blue-50 cursor-pointer"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-blue-50 cursor-pointer"
                   aria-label="Copy PIN code"
                 >
                   <Copy className="h-3.5 w-3.5" aria-hidden="true" />

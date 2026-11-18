@@ -51,23 +51,23 @@ export function computeClientTypeBreakdown(clients: ClientRecord[]): ClientTypeS
   }[] = [
     {
       label: 'Business Registration',
-      barColor: 'bg-[#0F172A]',
-      dotColor: 'bg-[#0F172A]',
+      barColor: 'bg-primary',
+      dotColor: 'bg-primary',
     },
     {
       label: 'Land Registry',
-      barColor: 'bg-[#2563EB]',
-      dotColor: 'bg-[#2563EB]',
+      barColor: 'bg-accent',
+      dotColor: 'bg-accent',
     },
     {
       label: 'Student Visa',
-      barColor: 'bg-blue-300',
-      dotColor: 'bg-blue-400',
+      barColor: 'bg-secondary',
+      dotColor: 'bg-secondary',
     },
     {
       label: 'Other',
-      barColor: 'bg-slate-300',
-      dotColor: 'bg-slate-400',
+      barColor: 'bg-sky-300',
+      dotColor: 'bg-sky-300',
     },
   ];
 

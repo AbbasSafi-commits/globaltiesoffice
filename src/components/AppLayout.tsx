@@ -50,7 +50,7 @@ function getInitials(name: string): string {
 }
 
 /**
- * Primary office shell featuring a fixed deep navy (#0F172A) sidebar,
+ * Primary office shell featuring a fixed deep navy (var(--color-sidebar)) sidebar,
  * minimal top bar with breadcrumb and profile menu, and centered content container.
  */
 export function AppLayout() {
@@ -103,7 +103,7 @@ export function AppLayout() {
   }, [profileMenuOpen]);
 
   const renderSidebarContent = (collapsed: boolean, onNavigate?: () => void) => (
-    <div className="flex h-full flex-col bg-[#0F172A] text-white select-none">
+    <div className="flex h-full flex-col bg-sidebar text-white select-none">
       <div
         className={`flex h-16 items-center border-b border-white/10 shrink-0 ${
           collapsed ? 'justify-center px-2' : 'justify-between px-4'
@@ -119,7 +119,7 @@ export function AppLayout() {
           <button
             type="button"
             onClick={onNavigate}
-            className="lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+            className="lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
             aria-label="Close navigation menu"
           >
             <X className="h-5 w-5" />
@@ -129,7 +129,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => setSidebarCollapsed(true)}
-              className="hidden lg:inline-flex rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+              className="hidden lg:inline-flex rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
               aria-label="Collapse sidebar"
               title="Collapse sidebar"
             >
@@ -161,17 +161,25 @@ export function AppLayout() {
               onClick={onNavigate}
               title={collapsed ? item.label : undefined}
               className={({ isActive }) =>
-                `flex items-center rounded-lg py-2.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
+                `flex items-center rounded-lg py-2.5 text-sm font-medium transition-colors whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
                   collapsed ? 'justify-center px-2' : 'gap-3 px-3.5'
                 } ${
                   isActive
-                    ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'text-slate-300 hover:bg-white/8 hover:text-white'
+                    ? 'bg-primary text-white border-l-[3px] border-accent shadow-xs'
+                    : 'text-white/85 hover:bg-sidebar-hover hover:text-white border-l-[3px] border-transparent'
                 }`
               }
             >
-              <Icon className="h-4 w-4 shrink-0" strokeWidth={1.85} aria-hidden="true" />
-              {!collapsed && <span>{item.label}</span>}
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-sky-300'}`}
+                    strokeWidth={1.85}
+                    aria-hidden="true"
+                  />
+                  {!collapsed && <span>{item.label}</span>}
+                </>
+              )}
             </NavLink>
           );
         })}
@@ -198,7 +206,7 @@ export function AppLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex">
+    <div className="min-h-screen bg-page flex">
       {/* Desktop Fixed Sidebar */}
       <aside
         className={`hidden lg:block shrink-0 print:hidden transition-[width] duration-200 ${
@@ -235,7 +243,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+              className="lg:hidden inline-flex items-center justify-center rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
@@ -279,9 +287,9 @@ export function AppLayout() {
               onClick={() => setProfileMenuOpen((prev) => !prev)}
               aria-expanded={profileMenuOpen}
               aria-haspopup="menu"
-              className="inline-flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+              className="inline-flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2563EB]/10 text-xs font-semibold text-[#2563EB] shrink-0">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary shrink-0">
                 {initials}
               </span>
               <span className="hidden sm:inline font-medium text-slate-800 max-w-[160px] truncate">
@@ -308,7 +316,7 @@ export function AppLayout() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium whitespace-nowrap shrink-0 ${
                         isSuperAdmin
-                          ? 'bg-blue-50 text-[#2563EB]'
+                          ? 'bg-blue-50 text-primary'
                           : 'bg-slate-100 text-slate-700'
                       }`}
                     >

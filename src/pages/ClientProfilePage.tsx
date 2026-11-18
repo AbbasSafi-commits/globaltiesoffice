@@ -34,7 +34,7 @@ function getStatusBadgeClass(status: ClientStatus): string {
     case 'Pending':
       return 'bg-amber-50 text-amber-800';
     case 'Completed':
-      return 'bg-blue-50 text-[#2563EB]';
+      return 'bg-blue-50 text-primary';
     case 'On Hold':
     default:
       return 'bg-slate-100 text-slate-600';
@@ -153,7 +153,7 @@ export function ClientProfilePage() {
       <div className="space-y-4">
         <Link
           to="/clients"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           <span>Back to clients</span>
@@ -166,7 +166,7 @@ export function ClientProfilePage() {
           </p>
           <Link
             to="/clients"
-            className="mt-5 inline-flex items-center justify-center rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs"
+            className="mt-5 inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors shadow-xs"
           >
             Return to Clients
           </Link>
@@ -191,7 +191,7 @@ export function ClientProfilePage() {
       {/* Profile Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/10 text-sm font-semibold text-[#2563EB]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
             {getInitials(client.name)}
           </div>
           <div className="space-y-2">
@@ -253,7 +253,7 @@ export function ClientProfilePage() {
                 }}
                 className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
-                    ? 'border-[#2563EB] text-[#2563EB]'
+                    ? 'border-primary text-primary'
                     : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
                 }`}
               >

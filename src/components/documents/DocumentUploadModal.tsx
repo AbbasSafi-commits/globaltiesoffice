@@ -370,7 +370,7 @@ export function DocumentUploadModal({
                   value={selectedClientId}
                   onChange={(e) => setSelectedClientId(e.target.value)}
                   disabled={uploading}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   required
                 >
                   <option value="">Select a client...</option>
@@ -397,7 +397,7 @@ export function DocumentUploadModal({
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   disabled={uploading}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {DOCUMENT_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -422,7 +422,7 @@ export function DocumentUploadModal({
                   disabled={uploading}
                   maxLength={500}
                   placeholder="e.g. Front & back scan, attested copy"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -443,7 +443,7 @@ export function DocumentUploadModal({
                   disabled={uploading}
                   maxLength={80}
                   placeholder="e.g. Tax Return, Power of Attorney"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             )}
@@ -462,8 +462,8 @@ export function DocumentUploadModal({
               }}
               className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
                 dragActive
-                  ? 'border-[#2563EB] bg-blue-50/60'
-                  : 'border-slate-300 bg-[#F8FAFC] hover:border-slate-400'
+                  ? 'border-primary bg-blue-50/60'
+                  : 'border-slate-300 bg-page hover:border-slate-400'
               }`}
             >
               <input
@@ -478,7 +478,7 @@ export function DocumentUploadModal({
                 disabled={uploading}
                 className="hidden"
               />
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-[#2563EB]">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-primary">
                 <Upload className="h-5 w-5" aria-hidden="true" />
               </div>
               <p className="mt-3 text-sm font-medium text-slate-900">
@@ -487,7 +487,7 @@ export function DocumentUploadModal({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="text-[#2563EB] hover:text-[#1D4ED8] underline font-semibold cursor-pointer disabled:opacity-50"
+                  className="text-primary hover:text-primary-hover underline font-semibold cursor-pointer disabled:opacity-50"
                 >
                   browse files
                 </button>
@@ -522,7 +522,7 @@ export function DocumentUploadModal({
                             />
                           ) : (
                             <ImageIcon
-                              className="h-4 w-4 text-[#2563EB] shrink-0"
+                              className="h-4 w-4 text-primary shrink-0"
                               aria-hidden="true"
                             />
                           )}
@@ -541,7 +541,7 @@ export function DocumentUploadModal({
                             <span className="text-xs text-slate-500">Ready</span>
                           )}
                           {item.status === 'uploading' && (
-                            <span className="text-xs font-mono tabular-nums text-[#2563EB]">
+                            <span className="text-xs font-mono tabular-nums text-primary">
                               {item.progress}%
                             </span>
                           )}
@@ -581,7 +581,7 @@ export function DocumentUploadModal({
                         <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                           <div
                             className={`h-full transition-all duration-200 ${
-                              item.status === 'done' ? 'bg-emerald-600' : 'bg-[#2563EB]'
+                              item.status === 'done' ? 'bg-emerald-600' : 'bg-primary'
                             }`}
                             style={{ width: `${item.progress}%` }}
                           />
@@ -611,7 +611,7 @@ export function DocumentUploadModal({
             <button
               type="submit"
               disabled={uploading || readyOrRetryCount === 0}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
             >
               {uploading ? (
                 <>

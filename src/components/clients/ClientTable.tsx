@@ -35,7 +35,7 @@ function getStatusBadgeClass(status: ClientStatus): string {
     case 'Pending':
       return 'bg-amber-50 text-amber-800';
     case 'Completed':
-      return 'bg-blue-50 text-[#2563EB]';
+      return 'bg-blue-50 text-primary';
     case 'On Hold':
     default:
       return 'bg-slate-100 text-slate-600';
@@ -120,7 +120,7 @@ export function ClientTable({
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search name, father name, mobile, CNIC, or NTN..."
               aria-label="Search clients"
-              className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+              className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
@@ -129,7 +129,7 @@ export function ClientTable({
               value={typeFilter}
               onChange={(e) => onTypeFilterChange(e.target.value)}
               aria-label="Filter by Client Type"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Types</option>
               {availableTypes.map((type) => (
@@ -143,7 +143,7 @@ export function ClientTable({
               value={statusFilter}
               onChange={(e) => onStatusFilterChange(e.target.value)}
               aria-label="Filter by Status"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Statuses</option>
               {CLIENT_STATUS_OPTIONS.map((status) => (
@@ -159,7 +159,7 @@ export function ClientTable({
           <button
             type="button"
             onClick={onAddClick}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0 shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span>Add Client</span>
@@ -187,7 +187,7 @@ export function ClientTable({
             <button
               type="button"
               onClick={onAddClick}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Add First Client</span>
@@ -221,7 +221,7 @@ export function ClientTable({
         <>
           <div className="overflow-auto max-h-[640px]">
             <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
+              <thead className="sticky top-0 z-10 bg-table-head/95 backdrop-blur-xs border-b border-border">
                 <tr className="text-xs font-medium text-slate-500">
                   <th className="px-5 py-3.5 whitespace-nowrap">Name</th>
                   <th className="px-5 py-3.5 whitespace-nowrap">Father Name</th>
@@ -240,9 +240,9 @@ export function ClientTable({
                       <button
                         type="button"
                         onClick={() => onViewClick(client)}
-                        className="inline-flex items-center gap-2.5 text-left font-medium text-slate-900 hover:text-[#2563EB] transition-colors cursor-pointer group"
+                        className="inline-flex items-center gap-2.5 text-left font-medium text-slate-900 hover:text-primary transition-colors cursor-pointer group"
                       >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-primary">
                           {getInitials(client.name)}
                         </span>
                         <span>{client.name}</span>

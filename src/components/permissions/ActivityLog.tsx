@@ -168,7 +168,7 @@ export function ActivityLog() {
       ) : (
         <div className="overflow-x-auto max-h-[68vh] overflow-y-auto">
           <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <thead className="sticky top-0 z-10 bg-table-head">
               <tr className="border-b border-slate-200 text-xs font-medium text-slate-500">
                 <th className="px-6 py-3">Time</th>
                 <th className="px-6 py-3">Who</th>

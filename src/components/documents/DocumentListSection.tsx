@@ -256,7 +256,7 @@ export function DocumentListSection({
                     : 'Search file name or note...'
                 }
                 aria-label="Search documents"
-                className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -264,7 +264,7 @@ export function DocumentListSection({
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               aria-label="Filter by category"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="All">All Categories</option>
               {categoryOptions.map((cat) => (
@@ -286,7 +286,7 @@ export function DocumentListSection({
               onClick={() => setViewMode('table')}
               className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === 'table'
-                  ? 'bg-white text-[#2563EB] shadow-xs'
+                  ? 'bg-white text-primary shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               aria-pressed={viewMode === 'table'}
@@ -299,7 +299,7 @@ export function DocumentListSection({
               onClick={() => setViewMode('grid')}
               className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === 'grid'
-                  ? 'bg-white text-[#2563EB] shadow-xs'
+                  ? 'bg-white text-primary shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               aria-pressed={viewMode === 'grid'}
@@ -314,7 +314,7 @@ export function DocumentListSection({
           <div
             role="status"
             aria-live="polite"
-            className="px-6 py-2.5 border-b border-blue-100 bg-blue-50/70 flex items-center gap-2 text-xs font-medium text-[#2563EB]"
+            className="px-6 py-2.5 border-b border-blue-100 bg-blue-50/70 flex items-center gap-2 text-xs font-medium text-primary"
           >
             <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" aria-hidden="true" />
             <span>
@@ -360,7 +360,7 @@ export function DocumentListSection({
                 <col className="w-[10%]" />
                 <col className="w-[8%] min-w-[128px]" />
               </colgroup>
-              <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
+              <thead className="sticky top-0 z-10 bg-table-head border-b border-border">
                 <tr className="text-xs font-medium text-slate-500">
                   <th className="px-4 py-3.5">Document</th>
                   {showClientColumn && <th className="px-4 py-3.5">Client</th>}
@@ -390,7 +390,7 @@ export function DocumentListSection({
                           <div
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                               isImg
-                                ? 'bg-blue-50 text-[#2563EB]'
+                                ? 'bg-blue-50 text-primary'
                                 : 'bg-red-50 text-red-600'
                             }`}
                           >
@@ -423,14 +423,14 @@ export function DocumentListSection({
                           <Link
                             to={`/clients/${item.clientId}?tab=documents`}
                             title={clientName}
-                            className="flex items-center gap-2 min-w-0 text-sm font-medium text-slate-800 hover:text-[#2563EB] group"
+                            className="flex items-center gap-2 min-w-0 text-sm font-medium text-slate-800 hover:text-primary group"
                           >
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-[#2563EB]">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-primary">
                               {getInitials(clientName)}
                             </span>
                             <span className="truncate">{clientName}</span>
                             <ExternalLink
-                              className="h-3 w-3 text-slate-400 shrink-0 group-hover:text-[#2563EB]"
+                              className="h-3 w-3 text-slate-400 shrink-0 group-hover:text-primary"
                               aria-hidden="true"
                             />
                           </Link>
@@ -535,7 +535,7 @@ export function DocumentListSection({
                       <div
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                           isImg
-                            ? 'bg-blue-50 text-[#2563EB]'
+                            ? 'bg-blue-50 text-primary'
                             : 'bg-red-50 text-red-600'
                         }`}
                       >
@@ -564,7 +564,7 @@ export function DocumentListSection({
                         <Link
                           to={`/clients/${item.clientId}?tab=documents`}
                           title={clientName}
-                          className="mt-1 inline-flex items-center gap-1 max-w-full text-xs font-medium text-[#2563EB] hover:underline"
+                          className="mt-1 inline-flex items-center gap-1 max-w-full text-xs font-medium text-primary hover:underline"
                         >
                           <span className="truncate">{clientName}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />

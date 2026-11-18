@@ -296,7 +296,7 @@ export function WebsiteFormModal({
                 maxLength={120}
                 required
                 placeholder="e.g. FBR IRIS Portal"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -315,7 +315,7 @@ export function WebsiteFormModal({
                 maxLength={500}
                 required
                 placeholder="https://iris.fbr.gov.pk"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -335,7 +335,7 @@ export function WebsiteFormModal({
                     }}
                     className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition-colors cursor-pointer ${
                       iconMode === 'upload'
-                        ? 'bg-[#2563EB] text-white'
+                        ? 'bg-primary text-white'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -350,7 +350,7 @@ export function WebsiteFormModal({
                     }}
                     className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition-colors cursor-pointer ${
                       iconMode === 'link'
-                        ? 'bg-[#2563EB] text-white'
+                        ? 'bg-primary text-white'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
@@ -362,7 +362,7 @@ export function WebsiteFormModal({
 
               <div className="flex items-center gap-4">
                 {/* Live Preview Circle */}
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/10 p-3 overflow-hidden border border-slate-200/80">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 p-3 overflow-hidden border border-slate-200/80">
                   {activePreviewSrc && !previewFailed ? (
                     <img
                       src={activePreviewSrc}
@@ -372,7 +372,7 @@ export function WebsiteFormModal({
                       onError={() => setPreviewFailed(true)}
                     />
                   ) : (
-                    <span className="text-base font-semibold text-[#2563EB]">
+                    <span className="text-base font-semibold text-primary">
                       {name.trim() ? name.trim()[0].toUpperCase() : '?'}
                     </span>
                   )}
@@ -421,7 +421,7 @@ export function WebsiteFormModal({
                       maxLength={500}
                       placeholder="https://example.com/logo.png"
                       aria-label="Paste image link"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   )}
 
@@ -451,7 +451,7 @@ export function WebsiteFormModal({
                   id="website-category"
                   value={categoryDropdown}
                   onChange={(e) => setCategoryDropdown(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {PRESET_WEBSITE_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -474,7 +474,7 @@ export function WebsiteFormModal({
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -494,7 +494,7 @@ export function WebsiteFormModal({
                   onChange={(e) => setCustomCategory(e.target.value)}
                   maxLength={60}
                   placeholder="e.g. Chambers, Excise, Utilities"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             )}
@@ -513,7 +513,7 @@ export function WebsiteFormModal({
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={300}
                 placeholder="Short note on what this portal is used for..."
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
@@ -530,7 +530,7 @@ export function WebsiteFormModal({
             <button
               type="submit"
               disabled={submitting || processingIcon}
-              className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
+              className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {submitting
                 ? 'Saving...'

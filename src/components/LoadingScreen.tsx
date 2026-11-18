@@ -8,13 +8,13 @@ interface LoadingScreenProps {
 export function LoadingScreen({ message = 'Verifying authorized access...' }: LoadingScreenProps) {
   return (
     <div
-      className="min-h-screen bg-[#F8FAFC] flex"
+      className="min-h-screen bg-page flex"
       role="status"
       aria-live="polite"
       aria-label={message}
     >
       {/* Sidebar skeleton on desktop */}
-      <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-[#0F172A] p-4">
+      <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar p-4">
         <div className="flex items-center gap-2.5 px-2 py-2.5 mb-6">
           <div className="h-9 w-9 shrink-0 rounded-lg bg-white p-0.5 overflow-hidden shadow-xs">
             <img

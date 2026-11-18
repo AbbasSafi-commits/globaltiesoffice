@@ -253,7 +253,7 @@ export function ClientFormModal({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-          <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-[#F8FAFC]/60">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-page/60">
             {validationError && (
               <div
                 className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
@@ -284,7 +284,7 @@ export function ClientFormModal({
                     maxLength={120}
                     required
                     placeholder="Full legal name"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -302,7 +302,7 @@ export function ClientFormModal({
                     onChange={(e) => setFatherName(e.target.value)}
                     maxLength={120}
                     placeholder="Father's full name"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -321,7 +321,7 @@ export function ClientFormModal({
                     maxLength={30}
                     required
                     placeholder="e.g. 0300-1234567"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -339,7 +339,7 @@ export function ClientFormModal({
                     onChange={(e) => setEmail(e.target.value)}
                     maxLength={254}
                     placeholder="client@example.com"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -357,7 +357,7 @@ export function ClientFormModal({
                     onChange={(e) => setAddress(e.target.value)}
                     maxLength={500}
                     placeholder="Street, city, and postal address"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -383,7 +383,7 @@ export function ClientFormModal({
                     onChange={(e) => setCnic(formatCnicInput(e.target.value))}
                     maxLength={15}
                     placeholder="00000-0000000-0"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -399,7 +399,7 @@ export function ClientFormModal({
                     type="date"
                     value={cnicIssueDate}
                     onChange={(e) => setCnicIssueDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -415,7 +415,7 @@ export function ClientFormModal({
                     type="date"
                     value={cnicExpiryDate}
                     onChange={(e) => setCnicExpiryDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -433,7 +433,7 @@ export function ClientFormModal({
                     onChange={(e) => setPassportNumber(e.target.value)}
                     maxLength={40}
                     placeholder="e.g. AB1234567"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono uppercase text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono uppercase text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -449,7 +449,7 @@ export function ClientFormModal({
                     type="date"
                     value={passportIssueDate}
                     onChange={(e) => setPassportIssueDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -465,7 +465,7 @@ export function ClientFormModal({
                     type="date"
                     value={passportExpiryDate}
                     onChange={(e) => setPassportExpiryDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -483,7 +483,7 @@ export function ClientFormModal({
                     onChange={(e) => setNtn(e.target.value)}
                     maxLength={40}
                     placeholder="National Tax Number"
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -506,7 +506,7 @@ export function ClientFormModal({
                     id="client-type"
                     value={typeDropdown}
                     onChange={(e) => setTypeDropdown(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {CLIENT_TYPE_DROPDOWN_OPTIONS.map((opt) => (
                       <option key={opt} value={opt}>
@@ -527,7 +527,7 @@ export function ClientFormModal({
                     id="client-status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value as ClientStatus)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {CLIENT_STATUS_OPTIONS.map((opt) => (
                       <option key={opt} value={opt}>
@@ -553,7 +553,7 @@ export function ClientFormModal({
                       maxLength={80}
                       required
                       placeholder="Enter custom client type (e.g. Tax Filing, Trademark)"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 )}
@@ -575,7 +575,7 @@ export function ClientFormModal({
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={2000}
                 placeholder="Optional internal office notes (do not store passwords here)"
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </section>
           </div>
@@ -592,7 +592,7 @@ export function ClientFormModal({
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
+              className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {submitting
                 ? 'Saving...'

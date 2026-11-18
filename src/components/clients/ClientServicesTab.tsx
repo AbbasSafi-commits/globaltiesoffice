@@ -33,7 +33,7 @@ function getCaseStatusBadgeClass(status: CaseStatus): string {
     case 'Completed':
       return 'bg-emerald-50 text-emerald-700';
     case 'In Progress':
-      return 'bg-blue-50 text-[#2563EB]';
+      return 'bg-blue-50 text-primary';
     case 'Submitted':
       return 'bg-amber-50 text-amber-800';
     case 'Rejected':
@@ -301,7 +301,7 @@ export function ClientServicesTab({
             <button
               type="button"
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shrink-0 shadow-xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0 shadow-xs cursor-pointer"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Add Service</span>
@@ -328,7 +328,7 @@ export function ClientServicesTab({
               <button
                 type="button"
                 onClick={openAddModal}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 <span>Add First Service</span>
@@ -474,7 +474,7 @@ export function ClientServicesTab({
                       maxLength={160}
                       required
                       placeholder="e.g. Company Registration, Land Registry Transfer, Student Visa"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                     <datalist id="suggested-services">
                       {SUGGESTED_SERVICE_NAMES.map((s) => (
@@ -494,7 +494,7 @@ export function ClientServicesTab({
                       id="case-status"
                       value={status}
                       onChange={(e) => setStatus(e.target.value as CaseStatus)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     >
                       {CASE_STATUS_OPTIONS.map((opt) => (
                         <option key={opt} value={opt}>
@@ -519,7 +519,7 @@ export function ClientServicesTab({
                       value={feesInput}
                       onChange={(e) => setFeesInput(e.target.value)}
                       placeholder="0"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono tabular-nums text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -535,7 +535,7 @@ export function ClientServicesTab({
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -551,7 +551,7 @@ export function ClientServicesTab({
                       type="date"
                       value={expectedDate}
                       onChange={(e) => setExpectedDate(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -567,7 +567,7 @@ export function ClientServicesTab({
                       type="date"
                       value={completedDate}
                       onChange={(e) => setCompletedDate(e.target.value)}
-                      className="w-full sm:w-1/2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full sm:w-1/2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
 
@@ -585,7 +585,7 @@ export function ClientServicesTab({
                       onChange={(e) => setNotes(e.target.value)}
                       maxLength={2000}
                       placeholder="Service remarks, filing references, or next steps..."
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 </div>
@@ -603,7 +603,7 @@ export function ClientServicesTab({
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-lg bg-[#2563EB] px-5 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
+                  className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
                 >
                   {saving ? 'Saving...' : editingCase ? 'Save Changes' : 'Add Service'}
                 </button>

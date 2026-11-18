@@ -36,7 +36,7 @@ export function BrandLogo({
         } ${isLight ? 'shadow-xs' : 'border border-slate-200 shadow-2xs'}`}
       >
         <img
-          src="/logo.png"
+          src="/logo-icon.png"
           alt="Global Ties logo"
           className="h-full w-full object-contain"
         />
@@ -44,7 +44,7 @@ export function BrandLogo({
       {showLabel && (
         <span
           className={`font-semibold tracking-tight whitespace-nowrap ${textSizes[size]} ${
-            isLight ? 'text-white' : 'text-[#0F172A]'
+            isLight ? 'text-white' : 'text-ink'
           } ${hideLabelOnMobile ? 'hidden sm:inline' : ''}`}
         >
           Global Ties

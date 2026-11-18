@@ -22,7 +22,7 @@ interface WebsiteCardProps {
 }
 
 const AVATAR_COLORS = [
-  'bg-[#2563EB]',
+  'bg-primary',
   'bg-slate-700',
   'bg-indigo-600',
   'bg-sky-600',
@@ -160,7 +160,7 @@ export function WebsiteCard({
       onDragEnd={() => isSuperAdmin && onDragEnd?.()}
       className={`group relative flex flex-col items-center rounded-2xl px-2 py-3.5 transition-all duration-150 select-none ${
         isDragging ? 'opacity-40 scale-95' : 'hover:-translate-y-0.5 hover:bg-slate-200/55'
-      } ${isDragOver ? 'ring-2 ring-[#2563EB]/40 bg-[#2563EB]/5' : ''}`}
+      } ${isDragOver ? 'ring-2 ring-primary/40 bg-primary/5' : ''}`}
     >
       {/* Super Admin Three-Dot Menu (always visible on mobile, on hover on desktop) */}
       {isSuperAdmin && (
@@ -227,12 +227,12 @@ export function WebsiteCard({
         type="button"
         onClick={() => onOpen(website)}
         title={website.name}
-        className="flex w-full flex-col items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] rounded-xl cursor-pointer"
+        className="flex w-full flex-col items-center gap-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary rounded-xl cursor-pointer"
       >
         <div
           className={`flex h-16 w-16 items-center justify-center rounded-full overflow-hidden transition-transform ${
             currentIconSrc
-              ? 'bg-[#2563EB]/10 p-3'
+              ? 'bg-primary/10 p-3'
               : `${getAvatarColor(website.name)} text-white`
           }`}
         >

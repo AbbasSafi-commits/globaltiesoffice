@@ -347,10 +347,10 @@ export function DashboardPage() {
       {/* Executive Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-semibold text-primary tracking-tight">
             Welcome back, {profile?.fullName?.split(' ')[0] || 'Staff'}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             {todayFormatted} · Global Ties overview
           </p>
         </div>
@@ -359,7 +359,7 @@ export function DashboardPage() {
           {canClientsAdd && (
             <Link
               to="/clients"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary border-b-2 border-accent px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Manage Clients</span>
@@ -368,7 +368,7 @@ export function DashboardPage() {
           {canDocumentsView && (
             <Link
               to="/documents"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB]"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <FolderOpen className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <span>Documents</span>

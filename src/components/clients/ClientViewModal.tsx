@@ -141,7 +141,7 @@ export function ClientViewModal({
             <button
               type="button"
               onClick={onEditClick}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors shadow-xs cursor-pointer"
             >
               <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Edit Client</span>

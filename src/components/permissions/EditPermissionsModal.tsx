@@ -172,7 +172,7 @@ export function EditPermissionsModal({
                   id="edit-role"
                   value={role}
                   onChange={(e) => handleRoleChange(e.target.value as RolePresetKey)}
-                  className="w-full sm:w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full sm:w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {ROLE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -247,7 +247,7 @@ export function EditPermissionsModal({
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-60 ${
                 confirmingSuperAdmin
                   ? 'border border-red-300 bg-white text-red-700 hover:bg-red-50'
-                  : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]'
+                  : 'bg-primary text-white hover:bg-primary-hover'
               }`}
             >
               {submitting

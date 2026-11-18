@@ -4,6 +4,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AccessDeniedPage } from './pages/AccessDeniedPage';
+import { BrowsePage } from './pages/BrowsePage';
 import { ClientProfilePage } from './pages/ClientProfilePage';
 import { ClientsPage } from './pages/ClientsPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -95,6 +96,14 @@ function AppRouter() {
           element={
             <ProtectedRoute module="documents">
               <DocumentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/browse"
+          element={
+            <ProtectedRoute module="browse">
+              <BrowsePage />
             </ProtectedRoute>
           }
         />

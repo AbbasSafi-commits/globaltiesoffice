@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Compass,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -29,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Clients', to: '/clients', icon: Users, module: 'clients' },
   { label: 'Ledger', to: '/ledger', icon: BookOpen, module: 'ledger' },
   { label: 'Documents', to: '/documents', icon: FileText, module: 'documents' },
+  { label: 'Browse', to: '/browse', icon: Compass, module: 'browse' },
   { label: 'Permissions', to: '/permissions', icon: ShieldCheck, superAdminOnly: true },
 ];
 

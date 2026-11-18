@@ -165,30 +165,38 @@ export function PortalLoginCard({
           )}
         </div>
 
-        {(canEdit || canDelete) && (
-          <div className="inline-flex items-center gap-2 shrink-0 self-start sm:self-auto">
-            {canEdit && (
-              <button
-                type="button"
-                onClick={() => onEditClick(login)}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Edit</span>
-              </button>
-            )}
-            {canDelete && (
-              <button
-                type="button"
-                onClick={() => onDeleteClick(login)}
-                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-              >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Delete</span>
-              </button>
-            )}
-          </div>
-        )}
+        <div className="inline-flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap">
+          {safeHref && (
+            <button
+              type="button"
+              onClick={() => window.open(safeHref, '_blank', 'noopener,noreferrer')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1D4ED8] transition-colors shadow-xs cursor-pointer"
+            >
+              <span>Open portal</span>
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => onEditClick(login)}
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Edit</span>
+            </button>
+          )}
+          {canDelete && (
+            <button
+              type="button"
+              onClick={() => onDeleteClick(login)}
+              className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Delete</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Credentials Grid */}

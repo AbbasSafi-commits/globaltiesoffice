@@ -48,6 +48,10 @@
         "documents": {
           "type": "object",
           "$ref": "ModulePermission"
+        },
+        "browse": {
+          "type": "object",
+          "$ref": "ModulePermission"
         }
       }
     },
@@ -264,6 +268,23 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userEmail", "action", "module", "details", "createdAt"]
+    },
+    "Website": {
+      "title": "Website",
+      "description": "Bookmarked official portal or website for staff in the Browse directory.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "url": { "type": "string", "minLength": 9, "maxLength": 500, "pattern": "^https://" },
+        "category": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "description": { "type": "string", "maxLength": 300 },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string", "format": "email" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "format": "email" }
+      },
+      "required": ["name", "url", "category", "createdAt", "createdBy"]
     }
   },
   "firestore": {
@@ -298,6 +319,10 @@
     "/documents/{docId}/chunks/{chunkId}": {
       "schema": { "$ref": "DocumentChunk" },
       "description": "Stores chunk records under /documents/{docId}."
+    },
+    "/websites/{id}": {
+      "schema": { "$ref": "Website" },
+      "description": "Stores bookmarked websites for the Browse directory."
     },
     "/activityLog/{id}": {
       "schema": { "$ref": "ActivityLogEntry" },

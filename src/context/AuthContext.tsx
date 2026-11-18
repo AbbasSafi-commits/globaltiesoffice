@@ -13,7 +13,8 @@ export type ModuleKey =
   | 'business_details'
   | 'portal_logins'
   | 'ledger'
-  | 'documents';
+  | 'documents'
+  | 'browse';
 
 export type ActionKey = 'view' | 'add' | 'edit' | 'delete';
 
@@ -59,6 +60,7 @@ const DEFAULT_SUPER_ADMIN_PERMISSIONS: Record<ModuleKey, ModulePermissions> = {
   portal_logins: { view: true, add: true, edit: true, delete: true },
   ledger: { view: true, add: true, edit: true, delete: true },
   documents: { view: true, add: true, edit: true, delete: true },
+  browse: { view: true, add: false, edit: false, delete: false },
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);

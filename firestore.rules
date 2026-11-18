@@ -76,6 +76,10 @@ service cloud.firestore {
       allow update: if can('clients', 'edit');
       allow delete: if can('clients', 'delete');
     }
+    match /websites/{id} {
+      allow read:   if can('browse', 'view');
+      allow create, update, delete: if isSuperAdmin();
+    }
 
     // Activity log: staff can write, only super admin can read, nobody can change it
     match /activityLog/{id} {

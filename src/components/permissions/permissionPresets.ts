@@ -11,12 +11,13 @@ export type FullPermissionsGrid = Record<ModuleKey, ModulePermissions>;
 
 export const OWNER_EMAIL = 'dailyaura76@gmail.com';
 
-export const MODULES: { key: ModuleKey; label: string }[] = [
+export const MODULES: { key: ModuleKey; label: string; viewOnly?: boolean }[] = [
   { key: 'clients', label: 'Clients' },
   { key: 'business_details', label: 'Business Details' },
   { key: 'portal_logins', label: 'Portal Logins (IDs & Passwords)' },
   { key: 'ledger', label: 'Ledger' },
   { key: 'documents', label: 'Documents / Files' },
+  { key: 'browse', label: 'Browse / Websites', viewOnly: true },
 ];
 
 export const ACTIONS: { key: ActionKey; label: string }[] = [
@@ -41,6 +42,7 @@ export function createEmptyPermissions(): FullPermissionsGrid {
     portal_logins: { view: false, add: false, edit: false, delete: false },
     ledger: { view: false, add: false, edit: false, delete: false },
     documents: { view: false, add: false, edit: false, delete: false },
+    browse: { view: false, add: false, edit: false, delete: false },
   };
 }
 
@@ -51,6 +53,7 @@ export function createFullPermissions(): FullPermissionsGrid {
     portal_logins: { view: true, add: true, edit: true, delete: true },
     ledger: { view: true, add: true, edit: true, delete: true },
     documents: { view: true, add: true, edit: true, delete: true },
+    browse: { view: true, add: false, edit: false, delete: false },
   };
 }
 
@@ -66,6 +69,7 @@ export function getPresetPermissions(role: RolePresetKey): FullPermissionsGrid {
         portal_logins: { view: true, add: false, edit: false, delete: false },
         ledger: { view: true, add: true, edit: true, delete: false },
         documents: { view: true, add: true, edit: true, delete: false },
+        browse: { view: true, add: false, edit: false, delete: false },
       };
     case 'accountant':
       return {
@@ -74,6 +78,7 @@ export function getPresetPermissions(role: RolePresetKey): FullPermissionsGrid {
         portal_logins: { view: false, add: false, edit: false, delete: false },
         ledger: { view: true, add: true, edit: true, delete: false },
         documents: { view: false, add: false, edit: false, delete: false },
+        browse: { view: true, add: false, edit: false, delete: false },
       };
     case 'data_entry':
       return {
@@ -82,6 +87,7 @@ export function getPresetPermissions(role: RolePresetKey): FullPermissionsGrid {
         portal_logins: { view: false, add: false, edit: false, delete: false },
         ledger: { view: false, add: false, edit: false, delete: false },
         documents: { view: true, add: true, edit: false, delete: false },
+        browse: { view: true, add: false, edit: false, delete: false },
       };
     case 'super_admin':
       return createFullPermissions();
@@ -92,7 +98,7 @@ export function getPresetPermissions(role: RolePresetKey): FullPermissionsGrid {
 }
 
 /**
- * Normalizes partial or missing Firestore permission maps into a complete 5x4 grid.
+ * Normalizes partial or missing Firestore permission maps into a complete permission grid.
  */
 export function normalizePermissions(
   raw?: Partial<Record<ModuleKey, Partial<ModulePermissions>>>
@@ -103,11 +109,20 @@ export function normalizePermissions(
   for (const mod of MODULES) {
     const entry = raw[mod.key];
     if (entry) {
-      const add = Boolean(entry.add);
-      const edit = Boolean(entry.edit);
-      const del = Boolean(entry.delete);
-      const view = Boolean(entry.view) || add || edit || del;
-      base[mod.key] = { view, add, edit, delete: del };
+      if (mod.viewOnly) {
+        base[mod.key] = {
+          view: Boolean(entry.view),
+          add: false,
+          edit: false,
+          delete: false,
+        };
+      } else {
+        const add = Boolean(entry.add);
+        const edit = Boolean(entry.edit);
+        const del = Boolean(entry.delete);
+        const view = Boolean(entry.view) || add || edit || del;
+        base[mod.key] = { view, add, edit, delete: del };
+      }
     }
   }
   return base;

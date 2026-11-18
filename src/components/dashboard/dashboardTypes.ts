@@ -201,6 +201,14 @@ export function formatDashboardActionLabel(action: string): string {
       return 'Downloaded document';
     case 'deleted_document':
       return 'Deleted document';
+    case 'opened_website':
+      return 'Opened website';
+    case 'added_website':
+      return 'Added website';
+    case 'updated_website':
+      return 'Updated website';
+    case 'deleted_website':
+      return 'Deleted website';
     default:
       return action.replace(/_/g, ' ');
   }

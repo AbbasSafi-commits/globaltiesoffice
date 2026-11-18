@@ -46,7 +46,8 @@ export function DocumentPreviewModal({
           <div className="min-w-0">
             <h2
               id="doc-preview-title"
-              className="text-base font-semibold text-slate-900 truncate"
+              title={documentItem.fileName}
+              className="text-base font-semibold text-slate-900 break-all max-w-full"
             >
               {documentItem.fileName}
             </h2>

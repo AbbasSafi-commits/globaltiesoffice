@@ -286,6 +286,49 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
+ * Smartly truncates long file names while preserving the end of the name and extension
+ * (e.g. "WhatsApp Image 2026-1...24 AM.jpeg").
+ */
+export function formatSmartFileName(fileName: string, maxLength = 34): string {
+  const clean = (fileName || '').trim();
+  if (clean.length <= maxLength) return clean;
+
+  const dotIdx = clean.lastIndexOf('.');
+  const extLen = dotIdx > 0 ? clean.length - dotIdx : 0;
+  const tailLength = Math.max(8, Math.min(extLen + 4, 14));
+  const headLength = Math.max(8, maxLength - tailLength - 3);
+
+  if (headLength + tailLength + 3 >= clean.length) {
+    return clean;
+  }
+
+  return `${clean.slice(0, headLength)}...${clean.slice(-tailLength)}`;
+}
+
+/**
+ * Returns a short uppercase file type label (e.g. "JPEG", "PNG", "PDF") for secondary metadata.
+ */
+export function getDocumentTypeLabel(fileType: string, fileName = ''): string {
+  const lowerType = (fileType || '').toLowerCase();
+  const lowerName = fileName.toLowerCase();
+  if (lowerType === 'application/pdf' || lowerName.endsWith('.pdf')) return 'PDF';
+  if (lowerType === 'image/png' || lowerName.endsWith('.png')) return 'PNG';
+  if (
+    lowerType === 'image/jpeg' ||
+    lowerType === 'image/jpg' ||
+    lowerName.endsWith('.jpg') ||
+    lowerName.endsWith('.jpeg')
+  ) {
+    return 'JPEG';
+  }
+  const dotIdx = lowerName.lastIndexOf('.');
+  if (dotIdx > 0 && dotIdx < lowerName.length - 1) {
+    return lowerName.slice(dotIdx + 1).toUpperCase();
+  }
+  return 'FILE';
+}
+
+/**
  * Formats a Firestore timestamp for document lists.
  */
 export function formatDocumentDate(ts?: { toDate?: () => Date } | null): string {

@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Camera, Trash2, X } from 'lucide-react';
 import {
   addDoc,
   collection,
   doc,
+  getDoc,
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
+import { ClientAvatar } from './ClientAvatar';
 import {
   CLIENT_STATUS_OPTIONS,
   CLIENT_TYPE_DROPDOWN_OPTIONS,
@@ -17,6 +19,7 @@ import {
   formatCnicInput,
   logClientActivity,
   PRESET_CLIENT_TYPES,
+  processClientPhoto,
 } from './clientTypes';
 
 interface ClientFormModalProps {
@@ -33,8 +36,8 @@ function resolveInitialTypeState(clientType?: string): {
   dropdown: string;
   custom: string;
 } {
-  if (!clientType) {
-    return { dropdown: 'Business Registration', custom: '' };
+  if (!clientType || !clientType.trim()) {
+    return { dropdown: '', custom: '' };
   }
   const isPreset = (PRESET_CLIENT_TYPES as readonly string[]).includes(clientType);
   if (isPreset) {
@@ -44,8 +47,10 @@ function resolveInitialTypeState(clientType?: string): {
 }
 
 /**
- * Add / Edit Client centered modal covering Personal, Identity, Client Type,
- * Status, and Notes sections inside grouped cards with a sticky Save/Cancel footer.
+ * Add / Edit Client modal. Only "Name" is required; all other fields are optional
+ * and validated only when a value is entered. Supports 256x256 square-cropped
+ * JPEG profile photos stored as `photoData` and syncs INC No & NTN to existing
+ * `businessDetails/{clientId}` documents.
  */
 export function ClientFormModal({
   existingClient,
@@ -56,15 +61,18 @@ export function ClientFormModal({
 }: ClientFormModalProps) {
   const isEditMode = Boolean(existingClient);
   const initialType = resolveInitialTypeState(existingClient?.clientType);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 1. Personal
+  // 1. Personal & Profile Photo
   const [name, setName] = useState(existingClient?.name || '');
   const [fatherName, setFatherName] = useState(existingClient?.fatherName || '');
   const [mobile, setMobile] = useState(existingClient?.mobile || '');
   const [email, setEmail] = useState(existingClient?.email || '');
   const [address, setAddress] = useState(existingClient?.address || '');
+  const [photoData, setPhotoData] = useState(existingClient?.photoData || '');
+  const [photoProcessing, setPhotoProcessing] = useState(false);
 
-  // 2. Identity
+  // 2. Identity, Tax & Dates
   const [cnic, setCnic] = useState(existingClient?.cnic || '');
   const [cnicIssueDate, setCnicIssueDate] = useState(existingClient?.cnicIssueDate || '');
   const [cnicExpiryDate, setCnicExpiryDate] = useState(existingClient?.cnicExpiryDate || '');
@@ -76,19 +84,43 @@ export function ClientFormModal({
     existingClient?.passportExpiryDate || ''
   );
   const [ntn, setNtn] = useState(existingClient?.ntn || '');
+  const [incNo, setIncNo] = useState(existingClient?.incNo || '');
+  const [taxYear, setTaxYear] = useState(existingClient?.taxYear || '');
+  const [incDate, setIncDate] = useState(existingClient?.incDate || '');
+  const [registrationDate, setRegistrationDate] = useState(
+    existingClient?.registrationDate || ''
+  );
+  const [taxFilingDate, setTaxFilingDate] = useState(existingClient?.taxFilingDate || '');
 
-  // 3. Client Type
+  // 3. Client Type & Status
   const [typeDropdown, setTypeDropdown] = useState(initialType.dropdown);
   const [customType, setCustomType] = useState(initialType.custom);
-
-  // 4. Status
   const [status, setStatus] = useState<ClientStatus>(existingClient?.status || 'Active');
 
-  // 5. Notes
+  // 4. Notes
   const [notes, setNotes] = useState(existingClient?.notes || '');
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setValidationError(null);
+    setPhotoProcessing(true);
+    try {
+      const processed = await processClientPhoto(file);
+      setPhotoData(processed);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : 'Unable to process the selected photo.';
+      setValidationError(msg);
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,20 +133,19 @@ export function ClientFormModal({
     const cleanCnic = cnic.trim();
     const cleanPassportNumber = passportNumber.trim().toUpperCase();
     const cleanNtn = ntn.trim();
+    const cleanIncNo = incNo.trim();
+    const cleanTaxYear = taxYear.trim();
     const cleanNotes = notes.trim();
     const resolvedClientType =
       typeDropdown === 'Other' ? customType.trim() : typeDropdown;
 
+    // Only Name is required; validate formats only when a value is entered
     if (!cleanName) {
       setValidationError('Client Name is required.');
       return;
     }
     if (cleanName.length > 120) {
       setValidationError('Client Name must be 120 characters or fewer.');
-      return;
-    }
-    if (!cleanMobile) {
-      setValidationError('Mobile No is required.');
       return;
     }
     if (cleanEmail && !EMAIL_REGEX.test(cleanEmail)) {
@@ -137,11 +168,7 @@ export function ClientFormModal({
       setValidationError('Passport Expiry Date must be after Passport Issue Date.');
       return;
     }
-    if (!resolvedClientType) {
-      setValidationError('Please specify the Client Type.');
-      return;
-    }
-    if (resolvedClientType.length > 80) {
+    if (resolvedClientType && resolvedClientType.length > 80) {
       setValidationError('Client Type must be 80 characters or fewer.');
       return;
     }
@@ -163,6 +190,12 @@ export function ClientFormModal({
       passportIssueDate,
       passportExpiryDate,
       ntn: cleanNtn,
+      incNo: cleanIncNo,
+      taxYear: cleanTaxYear,
+      incDate,
+      registrationDate,
+      taxFilingDate,
+      photoData,
       clientType: resolvedClientType,
       status,
       notes: cleanNotes,
@@ -179,11 +212,29 @@ export function ClientFormModal({
           handleFirestoreError(err, OperationType.UPDATE, clientPath);
         }
 
+        // Sync INC No and NTN into existing businessDetails/{clientId} if present
+        try {
+          const businessRef = doc(db, 'businessDetails', existingClient.id);
+          const businessSnap = await getDoc(businessRef);
+          if (businessSnap.exists()) {
+            await updateDoc(businessRef, {
+              incNo: cleanIncNo,
+              ntn: cleanNtn,
+              updatedAt: serverTimestamp(),
+              updatedBy: currentUserEmail.toLowerCase(),
+            });
+          }
+        } catch {
+          // Non-blocking if user lacks business_details permission
+        }
+
         await logClientActivity({
           userEmail: currentUserEmail,
           action: 'updated_client',
           targetId: existingClient.id,
-          details: `Updated client "${cleanName}" (${resolvedClientType})`,
+          details: resolvedClientType
+            ? `Updated client "${cleanName}" (${resolvedClientType})`
+            : `Updated client "${cleanName}"`,
         });
 
         onSuccess(`Client "${cleanName}" updated successfully.`);
@@ -204,7 +255,9 @@ export function ClientFormModal({
           userEmail: currentUserEmail,
           action: 'added_client',
           targetId: createdId,
-          details: `Added client "${cleanName}" (${resolvedClientType})`,
+          details: resolvedClientType
+            ? `Added client "${cleanName}" (${resolvedClientType})`
+            : `Added client "${cleanName}"`,
         });
 
         onSuccess(`Client "${cleanName}" added successfully.`);
@@ -237,8 +290,8 @@ export function ClientFormModal({
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               {isEditMode
-                ? 'Update personal, identity, and classification details.'
-                : 'Register a new client record in Global Ties.'}
+                ? 'Update personal, identity, tax, and classification details.'
+                : 'Register a new client record in Global Ties. Only Name is required.'}
             </p>
           </div>
           <button
@@ -263,11 +316,62 @@ export function ClientFormModal({
               </div>
             )}
 
-            {/* 1. Personal */}
+            {/* 1. Personal & Photo */}
             <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
               <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
                 1. Personal Details
               </h3>
+
+              {/* Optional Profile Photo */}
+              <div className="flex flex-wrap items-center gap-4 pb-2">
+                <ClientAvatar
+                  name={name || 'Client'}
+                  photoData={photoData}
+                  size="lg"
+                />
+                <div className="space-y-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                      onChange={handlePhotoSelect}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => photoInputRef.current?.click()}
+                      disabled={submitting || photoProcessing}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-primary hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>
+                        {photoProcessing
+                          ? 'Processing...'
+                          : photoData
+                            ? 'Change Photo'
+                            : 'Upload Photo'}
+                      </span>
+                    </button>
+
+                    {photoData && (
+                      <button
+                        type="button"
+                        onClick={() => setPhotoData('')}
+                        disabled={submitting || photoProcessing}
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span>Remove photo</span>
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Optional JPG or PNG · Auto-cropped to 256×256 square
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
@@ -311,7 +415,7 @@ export function ClientFormModal({
                     htmlFor="client-mobile"
                     className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    Mobile No <span className="text-red-600">*</span>
+                    Mobile No
                   </label>
                   <input
                     id="client-mobile"
@@ -319,7 +423,6 @@ export function ClientFormModal({
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
                     maxLength={30}
-                    required
                     placeholder="e.g. 0300-1234567"
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
@@ -363,10 +466,10 @@ export function ClientFormModal({
               </div>
             </section>
 
-            {/* 2. Identity */}
+            {/* 2. Identity, Tax & Dates */}
             <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
               <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
-                2. Identity &amp; Tax Information
+                2. Identity, Tax &amp; Important Dates
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
@@ -486,10 +589,94 @@ export function ClientFormModal({
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="client-inc-no"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    INC No
+                  </label>
+                  <input
+                    id="client-inc-no"
+                    type="text"
+                    value={incNo}
+                    onChange={(e) => setIncNo(e.target.value)}
+                    maxLength={60}
+                    placeholder="Incorporation No"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-tax-year"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Tax Year
+                  </label>
+                  <input
+                    id="client-tax-year"
+                    type="text"
+                    value={taxYear}
+                    onChange={(e) => setTaxYear(e.target.value)}
+                    maxLength={30}
+                    placeholder="e.g. 2025-26"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-inc-date"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    INC Date
+                  </label>
+                  <input
+                    id="client-inc-date"
+                    type="date"
+                    value={incDate}
+                    onChange={(e) => setIncDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-registration-date"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Registration Date
+                  </label>
+                  <input
+                    id="client-registration-date"
+                    type="date"
+                    value={registrationDate}
+                    onChange={(e) => setRegistrationDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="client-tax-filing-date"
+                    className="block text-xs font-medium text-slate-700 mb-1.5"
+                  >
+                    Tax Filing Date
+                  </label>
+                  <input
+                    id="client-tax-filing-date"
+                    type="date"
+                    value={taxFilingDate}
+                    onChange={(e) => setTaxFilingDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
               </div>
             </section>
 
-            {/* 3. Client Type & 4. Status */}
+            {/* 3. Classification & Status */}
             <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-2xs">
               <h3 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2.5">
                 3. Classification &amp; Status
@@ -500,7 +687,7 @@ export function ClientFormModal({
                     htmlFor="client-type"
                     className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    Client Type <span className="text-red-600">*</span>
+                    Client Type
                   </label>
                   <select
                     id="client-type"
@@ -508,6 +695,7 @@ export function ClientFormModal({
                     onChange={(e) => setTypeDropdown(e.target.value)}
                     className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
+                    <option value="">— Select Client Type (Optional) —</option>
                     {CLIENT_TYPE_DROPDOWN_OPTIONS.map((opt) => (
                       <option key={opt} value={opt}>
                         {opt}
@@ -521,7 +709,7 @@ export function ClientFormModal({
                     htmlFor="client-status"
                     className="block text-xs font-medium text-slate-700 mb-1.5"
                   >
-                    Status <span className="text-red-600">*</span>
+                    Status
                   </label>
                   <select
                     id="client-status"
@@ -543,7 +731,7 @@ export function ClientFormModal({
                       htmlFor="client-custom-type"
                       className="block text-xs font-medium text-slate-700 mb-1.5"
                     >
-                      Custom Client Type <span className="text-red-600">*</span>
+                      Custom Client Type
                     </label>
                     <input
                       id="client-custom-type"
@@ -551,7 +739,6 @@ export function ClientFormModal({
                       value={customType}
                       onChange={(e) => setCustomType(e.target.value)}
                       maxLength={80}
-                      required
                       placeholder="Enter custom client type (e.g. Tax Filing, Trademark)"
                       className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                     />
@@ -591,7 +778,7 @@ export function ClientFormModal({
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || photoProcessing}
               className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60 transition-colors shadow-xs cursor-pointer"
             >
               {submitting

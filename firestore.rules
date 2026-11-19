@@ -80,6 +80,10 @@ service cloud.firestore {
       allow read:   if can('browse', 'view');
       allow create, update, delete: if isSuperAdmin();
     }
+    match /serviceDepartments/{id} {
+      allow read:   if can('clients', 'view');
+      allow create, update, delete: if isSuperAdmin();
+    }
 
     // Activity log: staff can write, only super admin can read, nobody can change it
     match /activityLog/{id} {

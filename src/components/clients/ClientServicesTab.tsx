@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Briefcase, Pencil, Plus, Trash2, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Briefcase, Pencil, Plus, Settings2, Trash2, X } from 'lucide-react';
 import {
   addDoc,
   collection,
@@ -17,9 +17,11 @@ import {
   CASE_STATUS_OPTIONS,
   CaseRecord,
   CaseStatus,
+  DEFAULT_SERVICE_DEPARTMENTS,
   logClientActivity,
-  SUGGESTED_SERVICE_NAMES,
+  ServiceDepartmentRecord,
 } from './clientTypes';
+import { ManageDepartmentsModal } from './ManageDepartmentsModal';
 
 interface ClientServicesTabProps {
   clientId: string;
@@ -44,16 +46,26 @@ function getCaseStatusBadgeClass(status: CaseStatus): string {
   }
 }
 
-function formatFees(fees: number | null | undefined): string {
+function formatPkr(fees: number | null | undefined): string {
   if (fees === null || fees === undefined || Number.isNaN(fees)) return '—';
-  return fees.toLocaleString('en-US', {
+  return `PKR ${fees.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  });
+  })}`;
+}
+
+function formatDatesSummary(item: CaseRecord): string {
+  const parts: string[] = [];
+  if (item.startDate) parts.push(`Start: ${item.startDate}`);
+  if (item.expectedDate) parts.push(`Exp: ${item.expectedDate}`);
+  if (item.completedDate) parts.push(`Done: ${item.completedDate}`);
+  return parts.length > 0 ? parts.join(' · ') : '—';
 }
 
 /**
- * Services / Cases tab stored in Firestore "cases" collection filtered by clientId.
+ * Rebuilt Services tab in the Client Profile.
+ * Uses Firestore "cases" for client services and "serviceDepartments" for
+ * super-admin-managed departments and sub categories.
  */
 export function ClientServicesTab({
   clientId,
@@ -61,7 +73,7 @@ export function ClientServicesTab({
   onSuccess,
   onError,
 }: ClientServicesTabProps) {
-  const { profile, can } = useAuth();
+  const { profile, isSuperAdmin, can } = useAuth();
   const currentUserEmail = (profile?.email || '').toLowerCase();
 
   const canAdd = can('clients', 'add');
@@ -71,22 +83,30 @@ export function ClientServicesTab({
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [departments, setDepartments] = useState<ServiceDepartmentRecord[]>([]);
+  const seededRef = useRef(false);
+
   const [modalOpen, setModalOpen] = useState(false);
+  const [manageModalOpen, setManageModalOpen] = useState(false);
   const [editingCase, setEditingCase] = useState<CaseRecord | null>(null);
   const [deletingCase, setDeletingCase] = useState<CaseRecord | null>(null);
 
-  // Form state
-  const [serviceName, setServiceName] = useState('');
+  // Service form state
+  const [deptDropdown, setDeptDropdown] = useState('');
+  const [customDept, setCustomDept] = useState('');
+  const [subDropdown, setSubDropdown] = useState('');
+  const [customSub, setCustomSub] = useState('');
   const [status, setStatus] = useState<CaseStatus>('Not Started');
+  const [feesInput, setFeesInput] = useState('');
   const [startDate, setStartDate] = useState('');
   const [expectedDate, setExpectedDate] = useState('');
   const [completedDate, setCompletedDate] = useState('');
-  const [feesInput, setFeesInput] = useState('');
   const [notes, setNotes] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Subscribe to client's cases
   useEffect(() => {
     const casesQuery = query(
       collection(db, 'cases'),
@@ -101,7 +121,6 @@ export function ClientServicesTab({
           ...(docSnap.data() as Omit<CaseRecord, 'id'>),
         }));
 
-        // Sort newest first in memory so no composite index is required
         list.sort((a, b) => {
           const aTime =
             a.createdAt && typeof a.createdAt.toDate === 'function'
@@ -130,14 +149,92 @@ export function ClientServicesTab({
     return () => unsubscribe();
   }, [clientId, onError]);
 
+  // Subscribe to managed serviceDepartments; auto-seed defaults once if empty (super admin)
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, 'serviceDepartments'),
+      (snapshot) => {
+        if (snapshot.empty && isSuperAdmin && !seededRef.current) {
+          seededRef.current = true;
+          Promise.all(
+            DEFAULT_SERVICE_DEPARTMENTS.map((name, index) =>
+              addDoc(collection(db, 'serviceDepartments'), {
+                name,
+                subCategories: [],
+                sortOrder: index,
+              })
+            )
+          ).catch((seedErr) => {
+            console.error('Failed to seed default serviceDepartments:', seedErr);
+          });
+          return;
+        }
+
+        const list: ServiceDepartmentRecord[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as Partial<ServiceDepartmentRecord>;
+          return {
+            id: docSnap.id,
+            name: data.name || '',
+            subCategories: Array.isArray(data.subCategories) ? data.subCategories : [],
+            sortOrder: typeof data.sortOrder === 'number' ? data.sortOrder : 0,
+          };
+        });
+
+        list.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+        setDepartments(list);
+      },
+      (err) => {
+        try {
+          handleFirestoreError(err, OperationType.LIST, 'serviceDepartments');
+        } catch {
+          // Fallback to default department names in dropdown if read fails
+        }
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isSuperAdmin]);
+
+  // Department options for the dropdown (always ending with "Other")
+  const departmentOptions = useMemo(() => {
+    const names =
+      departments.length > 0
+        ? departments.map((d) => d.name).filter((n) => n && n !== 'Other')
+        : DEFAULT_SERVICE_DEPARTMENTS.filter((n) => n !== 'Other');
+    return [...names, 'Other'];
+  }, [departments]);
+
+  // Sub category options for the currently selected department (always ending with "Other")
+  const subCategoryOptions = useMemo(() => {
+    if (!deptDropdown || deptDropdown === 'Other') {
+      return ['Other'];
+    }
+    const matched = departments.find((d) => d.name === deptDropdown);
+    const subs = (matched?.subCategories || []).filter((s) => s && s !== 'Other');
+    return [...subs, 'Other'];
+  }, [departments, deptDropdown]);
+
+  // Total fees across all services for this client
+  const totalFees = useMemo(() => {
+    return cases.reduce((sum, item) => {
+      if (typeof item.fees === 'number' && !Number.isNaN(item.fees)) {
+        return sum + item.fees;
+      }
+      return sum;
+    }, 0);
+  }, [cases]);
+
   const openAddModal = () => {
     setEditingCase(null);
-    setServiceName('');
+    setDeptDropdown('');
+    setCustomDept('');
+    setSubDropdown('');
+    setCustomSub('');
     setStatus('Not Started');
+    setFeesInput('');
     setStartDate('');
     setExpectedDate('');
     setCompletedDate('');
-    setFeesInput('');
     setNotes('');
     setValidationError(null);
     setModalOpen(true);
@@ -145,14 +242,41 @@ export function ClientServicesTab({
 
   const openEditModal = (item: CaseRecord) => {
     setEditingCase(item);
-    setServiceName(item.serviceName || '');
+
+    const existingDept = item.department || item.serviceName || '';
+    const isKnownDept = departmentOptions.includes(existingDept) && existingDept !== 'Other';
+    if (!existingDept) {
+      setDeptDropdown('');
+      setCustomDept('');
+    } else if (isKnownDept) {
+      setDeptDropdown(existingDept);
+      setCustomDept('');
+    } else {
+      setDeptDropdown('Other');
+      setCustomDept(existingDept);
+    }
+
+    const matchedDeptObj = departments.find((d) => d.name === existingDept);
+    const knownSubs = matchedDeptObj?.subCategories || [];
+    const existingSub = item.subCategory || '';
+    if (!existingSub) {
+      setSubDropdown('');
+      setCustomSub('');
+    } else if (knownSubs.includes(existingSub) && existingSub !== 'Other') {
+      setSubDropdown(existingSub);
+      setCustomSub('');
+    } else {
+      setSubDropdown('Other');
+      setCustomSub(existingSub);
+    }
+
     setStatus(item.status || 'Not Started');
-    setStartDate(item.startDate || '');
-    setExpectedDate(item.expectedDate || '');
-    setCompletedDate(item.completedDate || '');
     setFeesInput(
       item.fees !== null && item.fees !== undefined ? String(item.fees) : ''
     );
+    setStartDate(item.startDate || '');
+    setExpectedDate(item.expectedDate || '');
+    setCompletedDate(item.completedDate || '');
     setNotes(item.notes || '');
     setValidationError(null);
     setModalOpen(true);
@@ -160,12 +284,16 @@ export function ClientServicesTab({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanService = serviceName.trim();
+
+    const resolvedDept =
+      deptDropdown === 'Other' ? customDept.trim() : deptDropdown.trim();
+    const resolvedSub =
+      subDropdown === 'Other' ? customSub.trim() : subDropdown.trim();
     const cleanNotes = notes.trim();
     const cleanFees = feesInput.trim();
 
-    if (!cleanService) {
-      setValidationError('Service Name is required.');
+    if (!resolvedDept) {
+      setValidationError('Login Department is required.');
       return;
     }
 
@@ -190,14 +318,20 @@ export function ClientServicesTab({
     setValidationError(null);
     setSaving(true);
 
+    const displayLabel = resolvedSub
+      ? `${resolvedDept} - ${resolvedSub}`
+      : resolvedDept;
+
     const payloadBase = {
       clientId,
-      serviceName: cleanService,
+      department: resolvedDept,
+      subCategory: resolvedSub,
+      serviceName: displayLabel,
       status,
+      fees: parsedFees,
       startDate,
       expectedDate,
       completedDate,
-      fees: parsedFees,
       notes: cleanNotes,
       updatedAt: serverTimestamp(),
       updatedBy: currentUserEmail,
@@ -217,10 +351,10 @@ export function ClientServicesTab({
           action: 'updated_case',
           module: 'clients',
           targetId: editingCase.id,
-          details: `Updated service "${cleanService}" (${status}) for client "${clientName}"`,
+          details: `Updated service "${displayLabel}" (${status}) for client "${clientName}"`,
         });
 
-        onSuccess(`Service "${cleanService}" updated.`);
+        onSuccess(`Service "${displayLabel}" updated.`);
       } else {
         let createdId = '';
         try {
@@ -239,10 +373,10 @@ export function ClientServicesTab({
           action: 'added_case',
           module: 'clients',
           targetId: createdId,
-          details: `Added service "${cleanService}" (${status}) for client "${clientName}"`,
+          details: `Added service "${displayLabel}" (${status}) for client "${clientName}"`,
         });
 
-        onSuccess(`Service "${cleanService}" added.`);
+        onSuccess(`Service "${displayLabel}" added.`);
       }
 
       setModalOpen(false);
@@ -258,6 +392,8 @@ export function ClientServicesTab({
     if (!deletingCase || !canDelete) return;
     setDeleting(true);
     const casePath = `cases/${deletingCase.id}`;
+    const label =
+      deletingCase.department || deletingCase.serviceName || 'Service';
 
     try {
       try {
@@ -271,10 +407,10 @@ export function ClientServicesTab({
         action: 'deleted_case',
         module: 'clients',
         targetId: deletingCase.id,
-        details: `Deleted service "${deletingCase.serviceName}" for client "${clientName}"`,
+        details: `Deleted service "${label}" for client "${clientName}"`,
       });
 
-      onSuccess(`Service "${deletingCase.serviceName}" deleted.`);
+      onSuccess(`Service "${label}" deleted.`);
       setDeletingCase(null);
     } catch (err) {
       console.error('Failed to delete service:', err);
@@ -287,28 +423,48 @@ export function ClientServicesTab({
   return (
     <div className="space-y-4">
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        {/* Header Bar */}
         <div className="px-6 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              Client Services &amp; Cases ({cases.length})
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Track registrations, filings, deadlines, completion dates, and agreed fees.
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="text-sm font-semibold text-slate-900">
+                Client Services ({cases.length})
+              </h2>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-mono font-semibold text-primary">
+                Total Fees: {formatPkr(totalFees)}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Track department services, sub categories, progress, dates, and PKR fees.
             </p>
           </div>
 
-          {canAdd && (
-            <button
-              type="button"
-              onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shrink-0 shadow-xs cursor-pointer"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              <span>Add Service</span>
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {isSuperAdmin && (
+              <button
+                type="button"
+                onClick={() => setManageModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-primary hover:bg-slate-50 transition-colors whitespace-nowrap cursor-pointer"
+              >
+                <Settings2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Manage Departments</span>
+              </button>
+            )}
+
+            {canAdd && (
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white hover:bg-primary-hover transition-colors whitespace-nowrap shadow-xs cursor-pointer"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+                <span>Add Service</span>
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* Table / Empty / Loading */}
         {loading ? (
           <div className="p-6 space-y-3" aria-busy="true">
             {[1, 2, 3].map((row) => (
@@ -322,7 +478,7 @@ export function ClientServicesTab({
             </div>
             <p className="text-sm font-medium text-slate-900">No services added yet</p>
             <p className="mt-1 text-sm text-slate-500">
-              Add service cases such as Company Registration, Land Registry Transfer, or Student Visa.
+              Add a service under FBR, SECP, Excise &amp; Taxation, Land Registry, Visa, or another department.
             </p>
             {canAdd && (
               <button
@@ -336,81 +492,113 @@ export function ClientServicesTab({
             )}
           </div>
         ) : (
-          <div className="overflow-auto max-h-[540px]">
-            <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200">
-                <tr className="text-xs font-medium text-slate-500">
-                  <th className="px-5 py-3.5 whitespace-nowrap">Service Name</th>
-                  <th className="px-5 py-3.5 whitespace-nowrap">Status</th>
-                  <th className="px-5 py-3.5 whitespace-nowrap">Start Date</th>
-                  <th className="px-5 py-3.5 whitespace-nowrap">Expected Date</th>
-                  <th className="px-5 py-3.5 whitespace-nowrap">Completed Date</th>
-                  <th className="px-5 py-3.5 text-right whitespace-nowrap">Fees</th>
-                  <th className="px-5 py-3.5">Notes</th>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] table-fixed text-left text-sm">
+              <thead className="bg-table-head border-b border-border">
+                <tr className="text-xs font-medium text-slate-600">
+                  <th className="w-[18%] px-4 py-3.5">Department</th>
+                  <th className="w-[20%] px-4 py-3.5">Sub Category</th>
+                  <th className="w-[13%] px-4 py-3.5">Status</th>
+                  <th className="w-[14%] px-4 py-3.5 text-right">Fees</th>
+                  <th className="w-[21%] px-4 py-3.5">Dates</th>
                   {(canEdit || canDelete) && (
-                    <th className="px-5 py-3.5 text-right whitespace-nowrap">Actions</th>
+                    <th className="w-[14%] px-4 py-3.5 text-right">Actions</th>
                   )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {cases.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-5 py-3.5 font-medium text-slate-900 whitespace-nowrap">
-                      {item.serviceName}
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getCaseStatusBadgeClass(
-                          item.status
-                        )}`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
-                      {item.startDate || '—'}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
-                      {item.expectedDate || '—'}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
-                      {item.completedDate || '—'}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-900 text-right whitespace-nowrap">
-                      {formatFees(item.fees)}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-600 max-w-[220px] truncate">
-                      {item.notes || '—'}
-                    </td>
-                    {(canEdit || canDelete) && (
-                      <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center justify-end gap-1.5">
-                          {canEdit && (
-                            <button
-                              type="button"
-                              onClick={() => openEditModal(item)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-                            >
-                              <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Edit</span>
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button
-                              type="button"
-                              onClick={() => setDeletingCase(item)}
-                              className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                              <span>Delete</span>
-                            </button>
-                          )}
+                {cases.map((item) => {
+                  const deptLabel = item.department || item.serviceName || '—';
+                  const subLabel = item.subCategory || '—';
+                  const datesText = formatDatesSummary(item);
+
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="px-4 py-3.5">
+                        <div
+                          className="font-medium text-slate-900 truncate"
+                          title={deptLabel}
+                        >
+                          {deptLabel}
+                        </div>
+                        {item.notes && (
+                          <div
+                            className="text-[11px] text-slate-500 truncate mt-0.5"
+                            title={item.notes}
+                          >
+                            {item.notes}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="text-slate-700 truncate" title={subLabel}>
+                          {subLabel}
                         </div>
                       </td>
-                    )}
-                  </tr>
-                ))}
+                      <td className="px-4 py-3.5 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getCaseStatusBadgeClass(
+                            item.status
+                          )}`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs tabular-nums text-slate-900 text-right whitespace-nowrap">
+                        {formatPkr(item.fees)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div
+                          className="font-mono text-xs tabular-nums text-slate-600 truncate"
+                          title={datesText}
+                        >
+                          {datesText}
+                        </div>
+                      </td>
+                      {(canEdit || canDelete) && (
+                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-1.5">
+                            {canEdit && (
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(item)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                              >
+                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Edit</span>
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                type="button"
+                                onClick={() => setDeletingCase(item)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Delete</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
+              <tfoot className="bg-slate-50/90 border-t border-slate-200">
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-4 py-3 text-xs font-semibold text-slate-700 text-right"
+                  >
+                    Total Fees
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs font-semibold tabular-nums text-primary text-right whitespace-nowrap">
+                    {formatPkr(totalFees)}
+                  </td>
+                  <td colSpan={canEdit || canDelete ? 2 : 1} />
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}
@@ -458,31 +646,104 @@ export function ClientServicesTab({
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Login Department (Required) */}
                   <div className="sm:col-span-2">
                     <label
-                      htmlFor="case-service-name"
+                      htmlFor="case-department"
                       className="block text-xs font-medium text-slate-700 mb-1.5"
                     >
-                      Service Name <span className="text-red-600">*</span>
+                      Login Department <span className="text-red-600">*</span>
                     </label>
-                    <input
-                      id="case-service-name"
-                      type="text"
-                      list="suggested-services"
-                      value={serviceName}
-                      onChange={(e) => setServiceName(e.target.value)}
-                      maxLength={160}
+                    <select
+                      id="case-department"
+                      value={deptDropdown}
+                      onChange={(e) => {
+                        setDeptDropdown(e.target.value);
+                        setSubDropdown('');
+                        setCustomSub('');
+                      }}
                       required
-                      placeholder="e.g. Company Registration, Land Registry Transfer, Student Visa"
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <datalist id="suggested-services">
-                      {SUGGESTED_SERVICE_NAMES.map((s) => (
-                        <option key={s} value={s} />
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="">Select department...</option>
+                      {departmentOptions.map((deptName) => (
+                        <option key={deptName} value={deptName}>
+                          {deptName}
+                        </option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
 
+                  {deptDropdown === 'Other' && (
+                    <div className="sm:col-span-2">
+                      <label
+                        htmlFor="case-custom-department"
+                        className="block text-xs font-medium text-slate-700 mb-1.5"
+                      >
+                        Custom Department <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        id="case-custom-department"
+                        type="text"
+                        value={customDept}
+                        onChange={(e) => setCustomDept(e.target.value)}
+                        maxLength={100}
+                        required
+                        placeholder="Enter department name"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  )}
+
+                  {/* Sub Category (Optional, depends on Department) */}
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="case-subcategory"
+                      className="block text-xs font-medium text-slate-700 mb-1.5"
+                    >
+                      Sub Category
+                    </label>
+                    <select
+                      id="case-subcategory"
+                      value={subDropdown}
+                      onChange={(e) => setSubDropdown(e.target.value)}
+                      disabled={!deptDropdown}
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 disabled:bg-slate-50 disabled:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="">
+                        {deptDropdown
+                          ? '— Select Sub Category (Optional) —'
+                          : 'Select a department first'}
+                      </option>
+                      {subCategoryOptions.map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {subDropdown === 'Other' && (
+                    <div className="sm:col-span-2">
+                      <label
+                        htmlFor="case-custom-subcategory"
+                        className="block text-xs font-medium text-slate-700 mb-1.5"
+                      >
+                        Custom Sub Category
+                      </label>
+                      <input
+                        id="case-custom-subcategory"
+                        type="text"
+                        value={customSub}
+                        onChange={(e) => setCustomSub(e.target.value)}
+                        maxLength={120}
+                        placeholder="Enter custom sub category"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  )}
+
+                  {/* Status */}
                   <div>
                     <label
                       htmlFor="case-status"
@@ -504,12 +765,13 @@ export function ClientServicesTab({
                     </select>
                   </div>
 
+                  {/* Fees (PKR) */}
                   <div>
                     <label
                       htmlFor="case-fees"
                       className="block text-xs font-medium text-slate-700 mb-1.5"
                     >
-                      Fees
+                      Fees (PKR)
                     </label>
                     <input
                       id="case-fees"
@@ -523,6 +785,7 @@ export function ClientServicesTab({
                     />
                   </div>
 
+                  {/* Dates */}
                   <div>
                     <label
                       htmlFor="case-start-date"
@@ -571,6 +834,7 @@ export function ClientServicesTab({
                     />
                   </div>
 
+                  {/* Notes */}
                   <div className="sm:col-span-2">
                     <label
                       htmlFor="case-notes"
@@ -613,6 +877,16 @@ export function ClientServicesTab({
         </div>
       )}
 
+      {/* Manage Departments Modal (Super Admins Only) */}
+      {manageModalOpen && isSuperAdmin && (
+        <ManageDepartmentsModal
+          departments={departments}
+          onClose={() => setManageModalOpen(false)}
+          onSuccess={onSuccess}
+          onError={onError}
+        />
+      )}
+
       {/* Delete Service Confirmation */}
       {deletingCase && canDelete && (
         <div
@@ -627,7 +901,9 @@ export function ClientServicesTab({
                 id="delete-case-title"
                 className="text-base font-semibold text-slate-900"
               >
-                Delete service &ldquo;{deletingCase.serviceName}&rdquo;?
+                Delete service &ldquo;
+                {deletingCase.department || deletingCase.serviceName || 'Service'}
+                &rdquo;?
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed">
                 This permanently removes this service record from {clientName}&apos;s profile.

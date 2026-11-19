@@ -28,6 +28,8 @@ interface QueuedFile {
   localId: string;
   file: File;
   normalizedType: string;
+  categoryOverride?: string;
+  cnicSlot?: 'front' | 'back';
   progress: number;
   status: 'ready' | 'uploading' | 'saving' | 'done' | 'error';
   error?: string;
@@ -60,9 +62,11 @@ export function DocumentUploadModal({
   onError,
 }: DocumentUploadModalProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cnicFrontInputRef = useRef<HTMLInputElement | null>(null);
+  const cnicBackInputRef = useRef<HTMLInputElement | null>(null);
 
   const [selectedClientId, setSelectedClientId] = useState(fixedClientId || '');
-  const [selectedCategory, setSelectedCategory] = useState<string>('CNIC');
+  const [selectedCategory, setSelectedCategory] = useState<string>('CNIC - Front');
   const [customCategory, setCustomCategory] = useState('');
   const [note, setNote] = useState('');
   const [queue, setQueue] = useState<QueuedFile[]>([]);
@@ -117,6 +121,36 @@ export function DocumentUploadModal({
     }
   };
 
+  const handleCnicSlotSelect = (slot: 'front' | 'back', files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setValidationError(null);
+
+    const file = files[0];
+    const check = validateDocumentFile(file);
+    if (!check.valid) {
+      const errMsg = check.error || 'Invalid file selected.';
+      setValidationError(errMsg);
+      onError(errMsg);
+      return;
+    }
+
+    const categoryOverride = slot === 'front' ? 'CNIC - Front' : 'CNIC - Back';
+    const nextItem: QueuedFile = {
+      localId: `cnic-${slot}-${Date.now()}`,
+      file,
+      normalizedType: check.normalizedType,
+      categoryOverride,
+      cnicSlot: slot,
+      progress: 0,
+      status: 'ready',
+    };
+
+    setQueue((prev) => [
+      ...prev.filter((item) => item.cnicSlot !== slot),
+      nextItem,
+    ]);
+  };
+
   const removeQueuedFile = (localId: string) => {
     if (uploading) return;
     setQueue((prev) => prev.filter((item) => item.localId !== localId));
@@ -154,12 +188,14 @@ export function DocumentUploadModal({
       const base64Data = await blobToBase64(prepared.blob);
       const chunks = splitBase64IntoChunks(base64Data);
 
+      const effectiveCategory = item.categoryOverride || finalCategory;
+
       // 3. Create the Firestore metadata document in collection "documents"
       const createdRef = await addDoc(collection(db, 'documents'), {
         clientId: targetClientId,
         clientName: targetClientName,
         fileName: item.file.name.trim(),
-        category: finalCategory,
+        category: effectiveCategory,
         note: note.trim(),
         fileType: prepared.fileType,
         size: prepared.size,
@@ -198,7 +234,7 @@ export function DocumentUploadModal({
           action: 'uploaded_document',
           clientId: targetClientId,
           targetId: createdDocId,
-          details: `Uploaded "${item.file.name.trim()}" (${finalCategory}, ${formatFileSize(prepared.size)}) for "${targetClientName}"`,
+          details: `Uploaded "${item.file.name.trim()}" (${effectiveCategory}, ${formatFileSize(prepared.size)}) for "${targetClientName}"`,
         });
       } catch {
         // Upload already succeeded; keep document saved
@@ -447,6 +483,117 @@ export function DocumentUploadModal({
                 />
               </div>
             )}
+
+            {/* Quick Dual-Slot CNIC Front & Back Uploader */}
+            {(selectedCategory === 'CNIC - Front' || selectedCategory === 'CNIC - Back') && (() => {
+              const frontItem = queue.find((q) => q.cnicSlot === 'front');
+              const backItem = queue.find((q) => q.cnicSlot === 'back');
+              return (
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-4 space-y-3">
+                  <div>
+                    <h3 className="text-xs font-semibold text-primary">
+                      Quick CNIC Upload (Front &amp; Back in One Step)
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Select both sides below to upload them together as separate CNIC - Front and CNIC - Back documents.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Front Slot */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-slate-800">
+                          CNIC - Front
+                        </span>
+                        {frontItem && !uploading && frontItem.status !== 'done' && (
+                          <button
+                            type="button"
+                            onClick={() => removeQueuedFile(frontItem.localId)}
+                            className="text-[11px] text-red-600 hover:underline cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        ref={cnicFrontInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        onChange={(e) => {
+                          handleCnicSlotSelect('front', e.target.files);
+                          e.target.value = '';
+                        }}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                      {frontItem ? (
+                        <div className="text-xs text-slate-700 truncate" title={frontItem.file.name}>
+                          {frontItem.file.name}{' '}
+                          <span className="text-slate-400 font-mono">
+                            ({formatFileSize(frontItem.file.size)})
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => cnicFrontInputRef.current?.click()}
+                          disabled={uploading}
+                          className="w-full rounded-lg border border-dashed border-slate-300 bg-page px-3 py-2 text-xs font-medium text-primary hover:border-primary hover:bg-blue-50/40 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          + Choose Front Side
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Back Slot */}
+                    <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-slate-800">
+                          CNIC - Back
+                        </span>
+                        {backItem && !uploading && backItem.status !== 'done' && (
+                          <button
+                            type="button"
+                            onClick={() => removeQueuedFile(backItem.localId)}
+                            className="text-[11px] text-red-600 hover:underline cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        ref={cnicBackInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        onChange={(e) => {
+                          handleCnicSlotSelect('back', e.target.files);
+                          e.target.value = '';
+                        }}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                      {backItem ? (
+                        <div className="text-xs text-slate-700 truncate" title={backItem.file.name}>
+                          {backItem.file.name}{' '}
+                          <span className="text-slate-400 font-mono">
+                            ({formatFileSize(backItem.file.size)})
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => cnicBackInputRef.current?.click()}
+                          disabled={uploading}
+                          className="w-full rounded-lg border border-dashed border-slate-300 bg-page px-3 py-2 text-xs font-medium text-primary hover:border-primary hover:bg-blue-50/40 transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                          + Choose Back Side
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Drag-and-Drop / Multi-File Picker */}
             <div

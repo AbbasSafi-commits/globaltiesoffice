@@ -11,7 +11,8 @@ import {
 import { db, handleFirestoreError, OperationType } from '../../lib/firebase';
 
 export const DOCUMENT_CATEGORIES = [
-  'CNIC',
+  'CNIC - Front',
+  'CNIC - Back',
   'Passport',
   'Photo',
   'Business Registration',

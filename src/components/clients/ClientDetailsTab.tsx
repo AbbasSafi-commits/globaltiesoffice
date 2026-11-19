@@ -96,6 +96,11 @@ export function ClientDetailsTab({ client }: ClientDetailsTabProps) {
             badge={passportWarning}
           />
           <ReadOnlyField label="NTN" value={client.ntn} mono />
+          <ReadOnlyField label="INC No" value={client.incNo} mono />
+          <ReadOnlyField label="Tax Year" value={client.taxYear} mono />
+          <ReadOnlyField label="INC Date" value={client.incDate} mono />
+          <ReadOnlyField label="Registration Date" value={client.registrationDate} mono />
+          <ReadOnlyField label="Tax Filing Date" value={client.taxFilingDate} mono />
         </div>
       </section>
 

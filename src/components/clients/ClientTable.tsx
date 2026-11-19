@@ -1,4 +1,12 @@
-import { Eye, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
+import React from 'react';
+import { Check, Eye, Pencil, Plus, Search, Trash2, Users, X } from 'lucide-react';
+import { ClientAvatar } from './ClientAvatar';
+import {
+  ClientCompletenessMap,
+  CompletenessModuleKey,
+  hasClientDetails,
+  MissingFilterKey,
+} from './clientCompleteness';
 import {
   CLIENT_STATUS_OPTIONS,
   ClientRecord,
@@ -19,6 +27,19 @@ interface ClientTableProps {
   onTypeFilterChange: (val: string) => void;
   statusFilter: string;
   onStatusFilterChange: (val: string) => void;
+  missingFilter: MissingFilterKey;
+  onMissingFilterChange: (val: MissingFilterKey) => void;
+  completenessMap: ClientCompletenessMap;
+  modulePerms: {
+    viewBusiness: boolean;
+    addBusiness: boolean;
+    viewDocuments: boolean;
+    addDocuments: boolean;
+    viewLogins: boolean;
+    addLogins: boolean;
+    viewLedger: boolean;
+    addLedger: boolean;
+  };
   canAdd: boolean;
   canEdit: boolean;
   canDelete: boolean;
@@ -26,6 +47,11 @@ interface ClientTableProps {
   onViewClick: (client: ClientRecord) => void;
   onEditClick: (client: ClientRecord) => void;
   onDeleteClick: (client: ClientRecord) => void;
+  onQuickAdd: (
+    client: ClientRecord,
+    module: CompletenessModuleKey,
+    mode: 'add' | 'add_another'
+  ) => void;
 }
 
 function getStatusBadgeClass(status: ClientStatus): string {
@@ -65,6 +91,10 @@ export function ClientTable({
   onTypeFilterChange,
   statusFilter,
   onStatusFilterChange,
+  missingFilter,
+  onMissingFilterChange,
+  completenessMap,
+  modulePerms,
   canAdd,
   canEdit,
   canDelete,
@@ -72,6 +102,7 @@ export function ClientTable({
   onViewClick,
   onEditClick,
   onDeleteClick,
+  onQuickAdd,
 }: ClientTableProps) {
   const availableTypes = Array.from(
     new Set<string>([
@@ -89,6 +120,12 @@ export function ClientTable({
     if (statusFilter !== 'all' && client.status !== statusFilter) {
       return false;
     }
+    if (missingFilter !== 'all') {
+      const flags = completenessMap[client.id];
+      if (flags && flags[missingFilter]) {
+        return false;
+      }
+    }
     if (!normalizedQuery) return true;
 
     const haystacks = [
@@ -97,12 +134,16 @@ export function ClientTable({
       client.mobile,
       client.cnic,
       client.ntn,
+      client.incNo,
     ];
     return haystacks.some((field) => (field || '').toLowerCase().includes(normalizedQuery));
   });
 
   const hasActiveFilters =
-    normalizedQuery.length > 0 || typeFilter !== 'all' || statusFilter !== 'all';
+    normalizedQuery.length > 0 ||
+    typeFilter !== 'all' ||
+    statusFilter !== 'all' ||
+    missingFilter !== 'all';
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
@@ -151,6 +192,20 @@ export function ClientTable({
                   {status}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={missingFilter}
+              onChange={(e) => onMissingFilterChange(e.target.value as MissingFilterKey)}
+              aria-label="Filter by Missing Module"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="all">Missing: Any</option>
+              {modulePerms.viewLogins && <option value="logins">Missing: Logins</option>}
+              {modulePerms.viewBusiness && <option value="business">Missing: Business</option>}
+              {modulePerms.viewDocuments && <option value="documents">Missing: Documents</option>}
+              <option value="services">Missing: Services</option>
+              {modulePerms.viewLedger && <option value="ledger">Missing: Ledger</option>}
             </select>
           </div>
         </div>
@@ -234,82 +289,199 @@ export function ClientTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredClients.map((client) => (
-                  <tr key={client.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => onViewClick(client)}
-                        className="inline-flex items-center gap-2.5 text-left font-medium text-slate-900 hover:text-primary transition-colors cursor-pointer group"
-                      >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600 group-hover:bg-blue-50 group-hover:text-primary">
-                          {getInitials(client.name)}
-                        </span>
-                        <span>{client.name}</span>
-                      </button>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-600 whitespace-nowrap">
-                      {client.fatherName || '—'}
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                        {client.clientType}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-700 whitespace-nowrap">
-                      {client.mobile}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
-                      {client.cnic || '—'}
-                    </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
-                          client.status
-                        )}`}
-                      >
-                        {client.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-xs font-mono tabular-nums text-slate-500 whitespace-nowrap">
-                      {formatClientDate(client.createdAt)}
-                    </td>
-                    <td className="px-5 py-3.5 text-right whitespace-nowrap">
-                      <div className="inline-flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => onViewClick(client)}
-                          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
-                        >
-                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                          <span>View</span>
-                        </button>
+                {filteredClients.map((client) => {
+                  const flags = completenessMap[client.id];
+                  const chips: {
+                    key: CompletenessModuleKey;
+                    label: string;
+                    present: boolean;
+                    visible: boolean;
+                    canTrigger: boolean;
+                  }[] = [
+                    {
+                      key: 'details',
+                      label: 'Details',
+                      present: hasClientDetails(client),
+                      visible: true,
+                      canTrigger: canEdit,
+                    },
+                    {
+                      key: 'business',
+                      label: 'Business',
+                      present: Boolean(flags?.business),
+                      visible: modulePerms.viewBusiness,
+                      canTrigger: modulePerms.addBusiness,
+                    },
+                    {
+                      key: 'documents',
+                      label: 'Documents',
+                      present: Boolean(flags?.documents),
+                      visible: modulePerms.viewDocuments,
+                      canTrigger: modulePerms.addDocuments,
+                    },
+                    {
+                      key: 'logins',
+                      label: 'Logins',
+                      present: Boolean(flags?.logins),
+                      visible: modulePerms.viewLogins,
+                      canTrigger: modulePerms.addLogins,
+                    },
+                    {
+                      key: 'services',
+                      label: 'Services',
+                      present: Boolean(flags?.services),
+                      visible: true,
+                      canTrigger: canAdd,
+                    },
+                    {
+                      key: 'ledger',
+                      label: 'Ledger',
+                      present: Boolean(flags?.ledger),
+                      visible: modulePerms.viewLedger,
+                      canTrigger: modulePerms.addLedger,
+                    },
+                  ];
 
-                        {canEdit && (
+                  return (
+                    <React.Fragment key={client.id}>
+                      <tr className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-5 pt-3.5 pb-2 whitespace-nowrap">
                           <button
                             type="button"
-                            onClick={() => onEditClick(client)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                            onClick={() => onViewClick(client)}
+                            className="inline-flex items-center gap-2.5 text-left font-medium text-slate-900 hover:text-primary transition-colors cursor-pointer group"
                           >
-                            <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                            <span>Edit</span>
+                            <ClientAvatar
+                              name={client.name}
+                              photoData={client.photoData}
+                              size="sm"
+                            />
+                            <span>{client.name}</span>
                           </button>
-                        )}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 text-slate-600 whitespace-nowrap">
+                          {client.fatherName || '—'}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 whitespace-nowrap">
+                          {client.clientType ? (
+                            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
+                              {client.clientType}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 font-mono text-xs tabular-nums text-slate-700 whitespace-nowrap">
+                          {client.mobile || '—'}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 font-mono text-xs tabular-nums text-slate-600 whitespace-nowrap">
+                          {client.cnic || '—'}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
+                              client.status
+                            )}`}
+                          >
+                            {client.status}
+                          </span>
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 text-xs font-mono tabular-nums text-slate-500 whitespace-nowrap">
+                          {formatClientDate(client.createdAt)}
+                        </td>
+                        <td className="px-5 pt-3.5 pb-2 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => onViewClick(client)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                            >
+                              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>View</span>
+                            </button>
 
-                        {canDelete && (
-                          <button
-                            type="button"
-                            onClick={() => onDeleteClick(client)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            <span>Delete</span>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                            {canEdit && (
+                              <button
+                                type="button"
+                                onClick={() => onEditClick(client)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                              >
+                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Edit</span>
+                              </button>
+                            )}
+
+                            {canDelete && (
+                              <button
+                                type="button"
+                                onClick={() => onDeleteClick(client)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>Delete</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Completeness Chips Row */}
+                      <tr className="bg-slate-50/40">
+                        <td colSpan={8} className="px-5 pt-1 pb-3">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {chips
+                              .filter((chip) => chip.visible)
+                              .map((chip) => (
+                                <span
+                                  key={chip.key}
+                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                                    chip.present
+                                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                      : 'border-red-200 bg-red-50 text-red-700'
+                                  }`}
+                                >
+                                  {chip.present ? (
+                                    <Check className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                  ) : (
+                                    <X className="h-3 w-3 shrink-0" aria-hidden="true" />
+                                  )}
+                                  <span>{chip.label}</span>
+                                  {chip.canTrigger && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        onQuickAdd(
+                                          client,
+                                          chip.key,
+                                          chip.present ? 'add_another' : 'add'
+                                        )
+                                      }
+                                      title={
+                                        chip.present
+                                          ? `Add another ${chip.label}`
+                                          : `Quick add ${chip.label}`
+                                      }
+                                      className={`ml-0.5 rounded-full p-0.5 transition-colors cursor-pointer ${
+                                        chip.present
+                                          ? 'hover:bg-emerald-200/70 text-emerald-800'
+                                          : 'hover:bg-red-200/70 text-red-800'
+                                      }`}
+                                    >
+                                      {chip.present ? (
+                                        <Pencil className="h-2.5 w-2.5" aria-hidden="true" />
+                                      ) : (
+                                        <Plus className="h-2.5 w-2.5" aria-hidden="true" />
+                                      )}
+                                    </button>
+                                  )}
+                                </span>
+                              ))}
+                          </div>
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>

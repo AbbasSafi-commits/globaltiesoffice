@@ -60,6 +60,12 @@ export interface ClientRecord {
   passportIssueDate: string;
   passportExpiryDate: string;
   ntn: string;
+  incNo?: string;
+  taxYear?: string;
+  incDate?: string;
+  registrationDate?: string;
+  taxFilingDate?: string;
+  photoData?: string;
   clientType: string;
   status: ClientStatus;
   notes: string;
@@ -74,6 +80,7 @@ export interface BusinessDetailsRecord {
   businessName: string;
   businessCategory: string;
   incNo: string;
+  ntn?: string;
   notes: string;
   createdAt?: { toDate?: () => Date } | null;
   createdBy?: string;
@@ -84,7 +91,9 @@ export interface BusinessDetailsRecord {
 export interface CaseRecord {
   id: string;
   clientId: string;
-  serviceName: string;
+  department?: string;
+  subCategory?: string;
+  serviceName?: string;
   status: CaseStatus;
   startDate: string;
   expectedDate: string;
@@ -96,6 +105,23 @@ export interface CaseRecord {
   updatedAt?: { toDate?: () => Date } | null;
   updatedBy?: string;
 }
+
+export interface ServiceDepartmentRecord {
+  id: string;
+  name: string;
+  subCategories: string[];
+  sortOrder: number;
+}
+
+export const DEFAULT_SERVICE_DEPARTMENTS = [
+  'FBR',
+  'SECP',
+  'Excise & Taxation',
+  'Sindh Revenue Board',
+  'Land Registry',
+  'Visa',
+  'Other',
+] as const;
 
 export const CNIC_REGEX = /^\d{5}-\d{7}-\d$/;
 
@@ -183,3 +209,72 @@ export async function logClientActivity(params: {
     handleFirestoreError(err, OperationType.CREATE, 'activityLog');
   }
 }
+
+const MAX_PHOTO_DATA_BYTES = 60 * 1024;
+const PHOTO_TARGET_SIZE = 256;
+
+/**
+ * Validates a JPG/PNG file, center-crops it to a square, resizes to 256x256
+ * using an HTML5 canvas, and returns a JPEG data URL under 60 KB.
+ */
+export async function processClientPhoto(file: File): Promise<string> {
+  const mime = (file.type || '').toLowerCase();
+  const lowerName = file.name.toLowerCase();
+  const isAllowed =
+    mime === 'image/jpeg' ||
+    mime === 'image/jpg' ||
+    mime === 'image/png' ||
+    lowerName.endsWith('.jpg') ||
+    lowerName.endsWith('.jpeg') ||
+    lowerName.endsWith('.png');
+
+  if (!isAllowed) {
+    throw new Error('Please upload a JPG or PNG image for the profile photo.');
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('Unable to read the selected image file.'));
+      el.src = objectUrl;
+    });
+
+    const srcW = img.naturalWidth || img.width;
+    const srcH = img.naturalHeight || img.height;
+    const side = Math.min(srcW, srcH);
+    const sx = Math.floor((srcW - side) / 2);
+    const sy = Math.floor((srcH - side) / 2);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = PHOTO_TARGET_SIZE;
+    canvas.height = PHOTO_TARGET_SIZE;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Browser canvas is unavailable.');
+    }
+
+    // White background so transparent PNGs encode cleanly as JPEG
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, PHOTO_TARGET_SIZE, PHOTO_TARGET_SIZE);
+    ctx.drawImage(img, sx, sy, side, side, 0, 0, PHOTO_TARGET_SIZE, PHOTO_TARGET_SIZE);
+
+    // Start at quality 0.8 and step down only if needed to stay under 60 KB
+    let quality = 0.8;
+    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+    while (dataUrl.length > MAX_PHOTO_DATA_BYTES && quality > 0.35) {
+      quality = Math.max(0.35, Number((quality - 0.1).toFixed(2)));
+      dataUrl = canvas.toDataURL('image/jpeg', quality);
+    }
+
+    if (dataUrl.length > MAX_PHOTO_DATA_BYTES) {
+      throw new Error('Compressed photo is still over 60 KB. Please choose a simpler image.');
+    }
+
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+

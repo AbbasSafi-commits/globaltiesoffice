@@ -11,7 +11,17 @@ import {
   query,
 } from 'firebase/firestore';
 import { ClientFormModal } from '../components/clients/ClientFormModal';
+import {
+  ClientQuickAddModal,
+  QuickAddTarget,
+} from '../components/clients/ClientQuickAddModal';
 import { ClientTable } from '../components/clients/ClientTable';
+import {
+  ClientCompletenessMap,
+  CompletenessModuleKey,
+  fetchClientCompletenessForIds,
+  MissingFilterKey,
+} from '../components/clients/clientCompleteness';
 import { ClientRecord, logClientActivity } from '../components/clients/clientTypes';
 import { useAuth } from '../context/AuthContext';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -37,6 +47,17 @@ export function ClientsPage() {
   const canEdit = can('clients', 'edit');
   const canDelete = can('clients', 'delete');
 
+  const modulePerms = {
+    viewBusiness: can('business_details', 'view'),
+    addBusiness: can('business_details', 'add'),
+    viewDocuments: can('documents', 'view'),
+    addDocuments: can('documents', 'add'),
+    viewLogins: can('portal_logins', 'view'),
+    addLogins: can('portal_logins', 'add'),
+    viewLedger: can('ledger', 'view'),
+    addLedger: can('ledger', 'add'),
+  };
+
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [fetchLimit, setFetchLimit] = useState(PAGE_SIZE);
   const [hasMore, setHasMore] = useState(false);
@@ -46,6 +67,10 @@ export function ClientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [missingFilter, setMissingFilter] = useState<MissingFilterKey>('all');
+
+  const [completenessMap, setCompletenessMap] = useState<ClientCompletenessMap>({});
+  const [quickAddTarget, setQuickAddTarget] = useState<QuickAddTarget | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientRecord | null>(null);
@@ -105,6 +130,67 @@ export function ClientsPage() {
     return () => unsubscribe();
   }, [fetchLimit, showToast]);
 
+  // Load completeness flags only for the currently loaded page of client IDs
+  const clientIdsKey = clients.map((c) => c.id).join(',');
+  useEffect(() => {
+    if (!clientIdsKey) {
+      setCompletenessMap({});
+      return;
+    }
+    let cancelled = false;
+    const ids = clientIdsKey.split(',');
+    fetchClientCompletenessForIds(ids, {
+      canViewBusiness: modulePerms.viewBusiness,
+      canViewDocuments: modulePerms.viewDocuments,
+      canViewLogins: modulePerms.viewLogins,
+      canViewLedger: modulePerms.viewLedger,
+    }).then((map) => {
+      if (!cancelled) {
+        setCompletenessMap(map);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    clientIdsKey,
+    modulePerms.viewBusiness,
+    modulePerms.viewDocuments,
+    modulePerms.viewLogins,
+    modulePerms.viewLedger,
+  ]);
+
+  const handleQuickAdd = (
+    client: ClientRecord,
+    module: CompletenessModuleKey,
+    mode: 'add' | 'add_another'
+  ) => {
+    if (module === 'details') {
+      setEditingClient(client);
+      return;
+    }
+    setQuickAddTarget({ client, module, mode });
+  };
+
+  const handleQuickAddSaved = (
+    clientId: string,
+    module: Exclude<CompletenessModuleKey, 'details'>,
+    message: string
+  ) => {
+    setCompletenessMap((prev) => ({
+      ...prev,
+      [clientId]: {
+        business: prev[clientId]?.business ?? false,
+        documents: prev[clientId]?.documents ?? false,
+        logins: prev[clientId]?.logins ?? false,
+        services: prev[clientId]?.services ?? false,
+        ledger: prev[clientId]?.ledger ?? false,
+        [module]: true,
+      },
+    }));
+    showToast('success', message);
+  };
+
   const handleLoadMore = () => {
     setLoadingMore(true);
     setFetchLimit((prev) => prev + PAGE_SIZE);
@@ -160,6 +246,10 @@ export function ClientsPage() {
         onTypeFilterChange={setTypeFilter}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
+        missingFilter={missingFilter}
+        onMissingFilterChange={setMissingFilter}
+        completenessMap={completenessMap}
+        modulePerms={modulePerms}
         canAdd={canAdd}
         canEdit={canEdit}
         canDelete={canDelete}
@@ -167,7 +257,19 @@ export function ClientsPage() {
         onViewClick={(c) => navigate(`/clients/${c.id}`)}
         onEditClick={(c) => setEditingClient(c)}
         onDeleteClick={(c) => setDeletingClient(c)}
+        onQuickAdd={handleQuickAdd}
       />
+
+      {/* Quick Add Modal from Completeness Chips */}
+      {quickAddTarget && (
+        <ClientQuickAddModal
+          target={quickAddTarget}
+          currentUserEmail={currentUserEmail}
+          onClose={() => setQuickAddTarget(null)}
+          onSaved={handleQuickAddSaved}
+          onError={(msg) => showToast('error', msg)}
+        />
+      )}
 
       {/* Add Client Modal */}
       {showAddModal && canAdd && (

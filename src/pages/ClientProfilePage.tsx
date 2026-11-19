@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, CheckCircle2, Pencil, Phone, X } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { ClientAvatar } from '../components/clients/ClientAvatar';
 import { ClientBusinessTab } from '../components/clients/ClientBusinessTab';
 import { ClientDetailsTab } from '../components/clients/ClientDetailsTab';
 import { ClientFormModal } from '../components/clients/ClientFormModal';
@@ -124,10 +125,10 @@ export function ClientProfilePage() {
   const tabs: { key: ProfileTabKey; label: string; visible: boolean }[] = [
     { key: 'details', label: 'Details', visible: true },
     { key: 'business', label: 'Business', visible: canViewBusiness },
-    { key: 'services', label: 'Services', visible: true },
-    { key: 'logins', label: 'Logins', visible: canViewLogins },
-    { key: 'ledger', label: 'Ledger', visible: canViewLedger },
     { key: 'documents', label: 'Documents', visible: canViewDocuments },
+    { key: 'logins', label: 'Logins', visible: canViewLogins },
+    { key: 'services', label: 'Services', visible: true },
+    { key: 'ledger', label: 'Ledger', visible: canViewLedger },
   ];
 
   const visibleTabs = tabs.filter((t) => t.visible);
@@ -191,17 +192,17 @@ export function ClientProfilePage() {
       {/* Profile Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-            {getInitials(client.name)}
-          </div>
+          <ClientAvatar name={client.name} photoData={client.photoData} size="md" />
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
                 {client.name}
               </h1>
-              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
-                {client.clientType}
-              </span>
+              {client.clientType && (
+                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">
+                  {client.clientType}
+                </span>
+              )}
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeClass(
                   client.status
@@ -211,18 +212,22 @@ export function ClientProfilePage() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" aria-hidden="true" />
-              <span className="font-mono tabular-nums text-slate-700">{client.mobile}</span>
-              {client.fatherName && (
-                <>
+            {(client.mobile || client.fatherName) && (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                {client.mobile && (
+                  <>
+                    <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" aria-hidden="true" />
+                    <span className="font-mono tabular-nums text-slate-700">{client.mobile}</span>
+                  </>
+                )}
+                {client.mobile && client.fatherName && (
                   <span className="text-slate-300" aria-hidden="true">
                     ·
                   </span>
-                  <span>S/O {client.fatherName}</span>
-                </>
-              )}
-            </div>
+                )}
+                {client.fatherName && <span>S/O {client.fatherName}</span>}
+              </div>
+            )}
           </div>
         </div>
 

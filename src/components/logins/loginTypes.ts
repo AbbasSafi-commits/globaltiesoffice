@@ -52,7 +52,9 @@ export async function logPortalLoginActivity(params: {
     | 'updated_portal_login'
     | 'deleted_portal_login'
     | 'revealed_password'
-    | 'copied_password';
+    | 'copied_password'
+    | 'copied_login_id'
+    | 'opened_autofill';
   clientId: string;
   websiteName: string;
   targetId?: string;
